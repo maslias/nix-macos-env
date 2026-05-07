@@ -73,6 +73,12 @@
     # Vi editing mode.
     bindkey -v
 
+    # Edit the current command line in $EDITOR.
+    autoload -Uz edit-command-line
+    zle -N edit-command-line
+    bindkey -M viins '^X^E' edit-command-line
+    bindkey -M vicmd 'v' edit-command-line
+
     # History search keybinds.
     # Ctrl-p/Ctrl-n search backward/forward for commands matching the current prefix.
     bindkey -M viins '^P' history-search-backward

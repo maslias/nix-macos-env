@@ -25,8 +25,8 @@
       };
 
       # Inspired by the previous Oh My Posh zen prompt:
-      # host, separator, full path, git info, optional devbox marker, duration right prompt.
-      format = "$hostname 󰄾 $directory$git_branch$git_status$custom.devbox\n$character";
+      # host, separator, full path, git info, separated devbox marker, duration right prompt.
+      format = "$hostname 󰄾 $directory$git_branch$custom.git_dirty$custom.devbox\n$character";
       right_format = "$cmd_duration";
 
       hostname = {
@@ -45,20 +45,18 @@
         format = "[$symbol](magenta)[$branch](gray)";
       };
 
-      git_status = {
-        format = "[$all_status$ahead_behind](gray)";
-        modified = "\\[\\*\\]";
-        staged = "\\[\\*\\]";
-        ahead = "\\[!\\]";
-        behind = "\\[!\\]";
-        diverged = "\\[!\\]";
+      # Keep git status intentionally compact: any non-clean worktree becomes [*].
+      custom.git_dirty = {
+        when = ''git rev-parse --is-inside-work-tree >/dev/null 2>&1 && test -n "$(git status --porcelain)"'';
+        command = "printf '[*]'";
+        format = "[$output](gray)";
       };
 
       custom.devbox = {
         when = ''test -n "$DEVBOX_SHELL_ENABLED"'';
-        command = "echo devbox";
+        command = "printf 'devbox'";
         symbol = "󱄅";
-        format = " [$symbol](magenta)[$output](gray)";
+        format = " [|](gray) [$symbol $output](magenta)";
       };
 
       cmd_duration = {
@@ -69,6 +67,10 @@
       character = {
         success_symbol = "[❯](yellow)";
         error_symbol = "[❯](red)";
+        vimcmd_symbol = "[❮ NORMAL](blue)";
+        vimcmd_replace_one_symbol = "[❮ REPLACE](orange)";
+        vimcmd_replace_symbol = "[❮ REPLACE](orange)";
+        vimcmd_visual_symbol = "[❮ VISUAL](magenta)";
       };
     };
   };
