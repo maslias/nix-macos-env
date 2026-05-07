@@ -20,11 +20,55 @@ EOF
   exit 1
 fi
 
-if ! command -v nix >/dev/null 2>&1; then
+ensure_nix_on_path() {
+  if command -v nix >/dev/null 2>&1; then
+    return 0
+  fi
+
+  # The Determinate installer writes this profile hook for multi-user Nix.
+  if [[ -r /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
+    # shellcheck disable=SC1091
+    . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+  fi
+
+  if [[ -x /nix/var/nix/profiles/default/bin/nix ]]; then
+    export PATH="/nix/var/nix/profiles/default/bin:$PATH"
+  fi
+
+  command -v nix >/dev/null 2>&1
+}
+
+install_nix() {
+  cat <<'EOF'
+Nix is not installed or is not on PATH.
+Installing Determinate Nix because this repository's nix-darwin config expects it.
+EOF
+
+  if ! command -v curl >/dev/null 2>&1; then
+    echo "error: curl is required to install Nix" >&2
+    exit 1
+  fi
+
+  curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix \
+    | sh -s -- install --no-confirm
+
+  if ! ensure_nix_on_path; then
+    cat >&2 <<'EOF'
+error: Nix was installed, but the nix command is still unavailable in this shell.
+Open a new terminal or source the Nix daemon profile, then re-run:
+  ./scripts/setup.sh
+EOF
+    exit 1
+  fi
+}
+
+if ! ensure_nix_on_path; then
+  install_nix
+fi
+
+if ! grep -q 'nix-darwin' flake.nix || ! grep -q 'home-manager' flake.nix; then
   cat >&2 <<'EOF'
-error: nix is not installed or is not on PATH.
-Install Nix first, then re-run this script:
-  https://nixos.org/download/
+error: this repository must declare both nix-darwin and home-manager in flake.nix.
 EOF
   exit 1
 fi
@@ -54,6 +98,10 @@ warning: flake username '$flake_username' does not match current macOS user '$cu
 Make sure flake.nix uses your macOS short username before continuing.
 EOF
 fi
+
+# Ensure newly added flake inputs, such as home-manager, are present in flake.lock
+# before the privileged nix-darwin switch runs.
+nix --extra-experimental-features "nix-command flakes" flake lock
 
 # Recent nix-darwin versions require system activation to run as root.
 # Keep this script running as the normal macOS user for config checks, then

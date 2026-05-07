@@ -12,8 +12,10 @@ Machine-specific values live in `flake.nix`:
 ## Structure
 
 ```text
-flake.nix                         # flake inputs and darwin configuration
+flake.nix                         # flake inputs and darwin/home-manager configuration
 hosts/default.nix                 # generic host config, uses flake hostname
+home/default.nix                  # Home Manager user config
+home/starship.nix                 # Starship prompt with Cyberdream colors
 modules/darwin/nix.nix            # minimal Nix settings
 modules/darwin/packages.nix       # system packages, empty for now
 modules/darwin/macos-defaults.nix # Dock, Finder, desktop/widgets
@@ -57,7 +59,7 @@ scripts/setup.sh                  # small nix-darwin bootstrap/apply helper
 - allow only Raycast as an unfree nixpkgs package
 - disable macOS Spotlight shortcuts so `Cmd-Space` can be used for Raycast
 
-Suggested Raycast hotkeys to set manually in Raycast Settings:
+Suggested Raycast hotkeys to set manually in Raycast Settings, or seed once via Raycast's `.rayconfig` import flow documented in [`docs/raycast.md`](docs/raycast.md):
 
 | Action | Suggested hotkey | Notes |
 | --- | --- | --- |
@@ -74,14 +76,31 @@ Avoided alternative: `Cmd-Option-H/J/K/L/M`. It is close to your original idea, 
 
 Raycast Window Management needs macOS Accessibility permission on first use.
 
+To bootstrap Raycast settings from an exported seed file:
+
+```sh
+scripts/raycast-import-settings.sh path/to/default.rayconfig
+```
+
 ### Terminal
 
 - install Alacritty
+- install JetBrainsMono Nerd Font for terminal glyph/icon support
 - manage `~/.config/alacritty/alacritty.toml` declaratively
-- use stable Menlo font defaults
+- add a matching Terminal.app `Cyberdream` profile and make it the default/startup profile
+- use Cyberdream dark colors from `cyberdream.nvim` extras
+- use a comfortable 14pt terminal font size
 - set `TERM=xterm-256color` for broad compatibility
 - enable macOS Option-as-Alt behavior
-- add modest window padding, clipboard selection, hidden mouse while typing, and a dark Nord-style palette
+- add modest window padding, clipboard selection, and hidden mouse while typing
+
+### Shell prompt
+
+- install and enable Starship through Home Manager
+- use the same Cyberdream colors as Alacritty
+- show hostname, full path, git branch/status, and optional Devbox marker
+- show command duration on the right after 5 seconds
+- use a two-line prompt with a yellow success `❯` and red error `❯`
 
 ### Zsh
 
@@ -175,7 +194,7 @@ The `hosts/default.nix` and `users/default.nix` modules are generic and consume 
 
 ## Apply
 
-First install Nix. Then run the lightweight setup script:
+Run the setup script. If Nix is missing, it installs Determinate Nix first, then applies nix-darwin with Home Manager enabled:
 
 ```sh
 ./scripts/setup.sh

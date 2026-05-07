@@ -1,10 +1,11 @@
-{ pkgs, username, ... }:
+{ lib, pkgs, username, ... }:
 
 let
   alacrittyConfig = pkgs.writeText "alacritty.toml" ''
-    # Stable, minimal Alacritty configuration managed by nix-darwin.
+    # Cyberdream Alacritty configuration managed by nix-darwin.
     # Local changes should be made in modules/darwin/alacritty.nix.
 
+    [general]
     live_config_reload = true
 
     [env]
@@ -14,30 +15,30 @@ let
     [window]
     startup_mode = "Windowed"
     decorations = "Full"
-    opacity = 1.0
+    opacity = 0.95
     option_as_alt = "Both"
 
     [window.padding]
-    x = 8
-    y = 8
+    x = 10
+    y = 10
 
     [font]
-    size = 13.0
+    size = 18.0
 
     [font.normal]
-    family = "Menlo"
+    family = "JetBrainsMono Nerd Font Mono"
     style = "Regular"
 
     [font.bold]
-    family = "Menlo"
+    family = "JetBrainsMono Nerd Font Mono"
     style = "Bold"
 
     [font.italic]
-    family = "Menlo"
+    family = "JetBrainsMono Nerd Font Mono"
     style = "Italic"
 
     [font.bold_italic]
-    family = "Menlo"
+    family = "JetBrainsMono Nerd Font Mono"
     style = "Bold Italic"
 
     [selection]
@@ -46,37 +47,57 @@ let
     [mouse]
     hide_when_typing = true
 
+    # Cyberdream dark palette: https://github.com/scottmckendry/cyberdream.nvim/tree/main/extras/alacritty
     [colors.primary]
-    background = "#0f1117"
-    foreground = "#d8dee9"
+    background = "#16181a"
+    foreground = "#ffffff"
+
+    [colors.cursor]
+    text = "#16181a"
+    cursor = "#5ef1ff"
+
+    [colors.selection]
+    background = "#3c4048"
+    foreground = "#ffffff"
 
     [colors.normal]
-    black = "#3b4252"
-    red = "#bf616a"
-    green = "#a3be8c"
-    yellow = "#ebcb8b"
-    blue = "#81a1c1"
-    magenta = "#b48ead"
-    cyan = "#88c0d0"
-    white = "#e5e9f0"
+    black = "#16181a"
+    red = "#ff6e5e"
+    green = "#5eff6c"
+    yellow = "#f1ff5e"
+    blue = "#5ea1ff"
+    magenta = "#bd5eff"
+    cyan = "#5ef1ff"
+    white = "#ffffff"
 
     [colors.bright]
-    black = "#4c566a"
-    red = "#bf616a"
-    green = "#a3be8c"
-    yellow = "#ebcb8b"
-    blue = "#81a1c1"
-    magenta = "#b48ead"
-    cyan = "#8fbcbb"
-    white = "#eceff4"
+    black = "#3c4048"
+    red = "#ff6e5e"
+    green = "#5eff6c"
+    yellow = "#f1ff5e"
+    blue = "#5ea1ff"
+    magenta = "#bd5eff"
+    cyan = "#5ef1ff"
+    white = "#ffffff"
+
+    [[colors.indexed_colors]]
+    index = 16
+    color = "#ffbd5e"
+
+    [[colors.indexed_colors]]
+    index = 17
+    color = "#ff6e5e"
   '';
 in
 {
   environment.systemPackages = [
     pkgs.alacritty
+    # Provides terminfo entries such as `alacritty` for programs that start
+    # before Alacritty's config has overridden TERM to xterm-256color.
+    pkgs.ncurses
   ];
 
-  system.activationScripts.alacrittyConfig.text = ''
+  system.activationScripts.postActivation.text = lib.mkAfter ''
     config_dir="/Users/${username}/.config/alacritty"
     config_file="$config_dir/alacritty.toml"
 

@@ -4,9 +4,11 @@
   imports = [
     ../modules/darwin/nix.nix
     ../modules/darwin/packages.nix
+    ../modules/darwin/browsers.nix
     ../modules/darwin/macos-defaults.nix
     ../modules/darwin/security.nix
     ../modules/darwin/raycast.nix
+    ../modules/darwin/terminal-appearance.nix
     ../modules/darwin/alacritty.nix
     ../modules/darwin/zsh.nix
     ../modules/darwin/vim.nix
