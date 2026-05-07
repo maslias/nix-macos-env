@@ -3,12 +3,19 @@
 {
   programs.zsh.enable = true;
 
+  # We manage completion setup below. Disable nix-darwin's default zsh
+  # completion/prompt snippets so /etc/zshrc does not run compinit twice after
+  # plugins have wrapped widgets.
+  programs.zsh.enableCompletion = false;
+  programs.zsh.enableBashCompletion = false;
+  programs.zsh.promptInit = "";
+
   environment.systemPackages = with pkgs; [
     fzf
     oh-my-zsh
+    starship
     zsh-autosuggestions
     zsh-completions
-    zsh-fzf-tab
     zsh-syntax-highlighting
   ];
 
@@ -43,8 +50,7 @@
     source <(fzf --zsh)
 
     # Shared operator-friendly zsh plugins.
-    source ${pkgs.oh-my-zsh}/share/oh-my-zsh/plugins/ssh-agent/ssh-agent.plugin.zsh
-    source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.plugin.zsh
+    # Load autosuggestions before syntax highlighting so highlighting can wrap widgets last.
     source ${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions/zsh-autosuggestions.zsh
     source ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
@@ -59,5 +65,9 @@
     # Shell behavior: quieter and better for pasted/documented commands.
     setopt no_beep
     setopt interactive_comments
+
+    # Prompt: Home Manager writes ~/.config/starship.toml, while nix-darwin
+    # owns /etc/zshrc for interactive shells on this machine.
+    eval "$(${pkgs.starship}/bin/starship init zsh)"
   '';
 }
