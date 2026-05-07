@@ -62,7 +62,7 @@ scripts/setup.sh                  # small nix-darwin bootstrap/apply helper
 ### Raycast
 
 - install Raycast from nixpkgs
-- allow only Raycast as an unfree nixpkgs package
+- allow only explicitly listed unfree nixpkgs apps: Google Chrome, Raycast, and VS Code
 - disable macOS Spotlight shortcuts so `Cmd-Space` can be used for Raycast
 
 Suggested Raycast hotkeys to set manually in Raycast Settings, or seed once via Raycast's `.rayconfig` import flow documented in [`docs/raycast.md`](docs/raycast.md):
@@ -132,6 +132,10 @@ scripts/raycast-import-settings.sh path/to/default.rayconfig
 - add `Ctrl-p` / `Ctrl-n` prefix history search
 - disable terminal bell
 - allow comments in interactive commands
+
+### GUI apps
+
+- install VS Code
 
 ### CLI packages
 

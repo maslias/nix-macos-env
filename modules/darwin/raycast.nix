@@ -1,15 +1,17 @@
 { lib, pkgs, ... }:
 
 {
-  # Raycast is distributed as a proprietary macOS app in nixpkgs.
+  # These apps are distributed as proprietary macOS apps in nixpkgs.
   nixpkgs.config.allowUnfreePredicate = pkg:
     builtins.elem (lib.getName pkg) [
       "google-chrome"
       "raycast"
+      "vscode"
     ];
 
   environment.systemPackages = [
     pkgs.raycast
+    pkgs.vscode
   ];
 
   # Free Cmd-Space for Raycast by disabling the default macOS Spotlight shortcut.
