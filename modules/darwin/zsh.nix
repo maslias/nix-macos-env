@@ -49,12 +49,17 @@
     # Completion colors and fzf-tab previews.
     export LS_COLORS="$(${pkgs.vivid}/bin/vivid generate cyberdream)"
     zstyle ':completion:*' list-colors "''${(s.:.)LS_COLORS}"
+    # Also accept fzf-tab completion selections with Ctrl-y.
+    zstyle ':fzf-tab:*' fzf-bindings 'ctrl-y:accept'
     zstyle ':fzf-tab:complete:cd:*' fzf-preview '${pkgs.coreutils}/bin/ls --color=always -la $realpath'
 
     # fzf: fuzzy finder keybinds/completion and clean default UI.
     export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
     export FZF_DEFAULT_COMMAND='find . -type f -not -path "*/.git/*"'
     export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    # Also accept fzf history/file selections with Ctrl-y.
+    export FZF_CTRL_R_OPTS='--bind=ctrl-y:accept'
+    export FZF_CTRL_T_OPTS='--bind=ctrl-y:accept'
     source <(fzf --zsh)
 
     # Shared operator-friendly zsh plugins.
