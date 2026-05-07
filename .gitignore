@@ -1,0 +1,14 @@
+# Nix build outputs
+result
+result-*
+
+# macOS
+.DS_Store
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+
+# Local pi agent state
+.pi/
