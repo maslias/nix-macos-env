@@ -17,7 +17,7 @@ hosts/default.nix                 # generic host config, uses flake hostname
 home/default.nix                  # Home Manager user config
 home/starship.nix                 # Starship prompt with Cyberdream colors
 modules/darwin/nix.nix            # minimal Nix settings
-modules/darwin/packages.nix       # system packages, empty for now
+modules/darwin/packages.nix       # shared CLI packages and helper scripts
 modules/darwin/macos-defaults.nix # Dock, Finder, desktop/widgets
 modules/darwin/security.nix       # firewall and low-risk privacy defaults
 modules/darwin/raycast.nix        # Raycast package and Spotlight shortcut handoff
@@ -119,6 +119,14 @@ scripts/raycast-import-settings.sh path/to/default.rayconfig
 - disable terminal bell
 - allow comments in interactive commands
 
+### CLI packages
+
+- install Git
+- install ripgrep (`rg`)
+- install fd (`fd`)
+- install bat (`bat`)
+- install tldr (`tldr`)
+
 ### Vim
 
 - install Vim
@@ -216,5 +224,5 @@ darwin-rebuild switch --flake .#your-hostname
 
 - Keyboard: faster key repeat and disable press-and-hold accents.
 - Trackpad: tap-to-click and natural scrolling preferences.
-- Packages: install a tiny base set like `git`, `vim`, `curl`.
+- Packages: add more daily CLI tools as needed, such as `curl`, `jq`, or `eza`.
 - Homebrew: manage cask apps declaratively later, if needed.
