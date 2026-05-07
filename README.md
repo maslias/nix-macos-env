@@ -18,6 +18,7 @@ home/default.nix                  # Home Manager user config
 home/starship.nix                 # Starship prompt with Cyberdream colors
 home/nvim.nix                     # Neovim with offline-safe native LSP, completion, Treesitter, fzf-lua
 modules/darwin/nix.nix            # minimal Nix settings
+modules/darwin/rosetta.nix        # Rosetta 2 for x86_64 binaries on Apple Silicon
 modules/darwin/packages.nix       # shared CLI packages and helper scripts
 modules/darwin/macos-defaults.nix # Dock, Finder, desktop/widgets
 modules/darwin/power.nix          # AC/battery sleep and Low Power Mode settings
@@ -32,6 +33,11 @@ scripts/setup.sh                  # small nix-darwin bootstrap/apply helper
 ```
 
 ## What is configured now
+
+### Rosetta
+
+- install Rosetta 2 on Apple Silicon Macs for x86_64 binary compatibility
+- declare `x86_64-darwin` as an extra Nix platform alongside `aarch64-darwin`
 
 ### Dock
 

@@ -3,6 +3,7 @@
 {
   imports = [
     ../modules/darwin/nix.nix
+    ../modules/darwin/rosetta.nix
     ../modules/darwin/packages.nix
     ../modules/darwin/browsers.nix
     ../modules/darwin/macos-defaults.nix
