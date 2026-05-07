@@ -19,6 +19,9 @@
       yamlfmt
       yamllint
 
+      nil
+      nixfmt
+
       taplo
 
       vscode-langservers-extracted
@@ -46,6 +49,7 @@
         yaml
       ]))
       SchemaStore-nvim
+      cyberdream-nvim
       mini-nvim
       fzf-lua
     ];
@@ -85,6 +89,9 @@
       vim.opt.updatetime = 300
       vim.opt.timeoutlen = 500
       vim.opt.completeopt = { "menuone", "noselect", "popup" }
+      vim.opt.complete = { ".^5", "w^5", "b^5", "u^5" }
+      vim.opt.autocomplete = true
+      vim.opt.autocompletedelay = 120
 
       local undodir = vim.fn.stdpath("state") .. "/undo"
       vim.fn.mkdir(undodir, "p")
@@ -144,6 +151,13 @@
       --------------------------------------------------------------------------------------------------
       -- Plugins
       --------------------------------------------------------------------------------------------------
+      require("cyberdream").setup({
+        terminal_colors = true,
+        transparent = true,
+        hide_fillchars = true,
+      })
+      vim.cmd.colorscheme("cyberdream")
+
       require("mini.statusline").setup()
       require("mini.bracketed").setup()
 
@@ -205,6 +219,12 @@
       --------------------------------------------------------------------------------------------------
       local schemastore = require("schemastore")
 
+      local capabilities = vim.lsp.protocol.make_client_capabilities()
+      capabilities.textDocument.completion.completionItem.snippetSupport = false
+      vim.lsp.config("*", {
+        capabilities = capabilities,
+      })
+
       vim.lsp.config("bashls", {
         cmd = { "bash-language-server", "start" },
         filetypes = { "bash", "sh", "zsh" },
@@ -225,6 +245,19 @@
             schemaStore = { enable = false, url = "" },
             schemas = schemastore.yaml.schemas(),
             validate = true,
+          },
+        },
+      })
+
+      vim.lsp.config("nil_ls", {
+        cmd = { "nil" },
+        filetypes = { "nix" },
+        root_markers = { "flake.nix", "default.nix", ".git" },
+        settings = {
+          ["nil"] = {
+            formatting = {
+              command = { "nixfmt" },
+            },
           },
         },
       })
@@ -267,7 +300,7 @@
         root_markers = { "pyproject.toml", "ruff.toml", ".ruff.toml", ".git" },
       })
 
-      vim.lsp.enable({ "bashls", "yamlls", "taplo", "jsonls", "pyright", "ruff" })
+      vim.lsp.enable({ "bashls", "yamlls", "nil_ls", "taplo", "jsonls", "pyright", "ruff" })
 
       local function format_with_command(cmd)
         local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
@@ -328,7 +361,24 @@
       vim.keymap.set("n", "<leader>w", "<cmd>update<cr>", { desc = "Save buffer" })
       vim.keymap.set("n", "<leader>x", "<cmd>quit<cr>", { desc = "Quit" })
       vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<cr>", { desc = "Clear search highlight" })
-      vim.keymap.set("i", "<C-Space>", "<C-x><C-o>", { desc = "Trigger completion" })
+
+      local function trigger_completion()
+        for _, client in ipairs(vim.lsp.get_clients({ bufnr = 0 })) do
+          if client:supports_method("textDocument/completion") then
+            vim.lsp.completion.get()
+            return
+          end
+        end
+        vim.api.nvim_feedkeys(vim.keycode("<C-n>"), "n", false)
+      end
+
+      vim.keymap.set("i", "<C-Space>", trigger_completion, { desc = "Trigger completion" })
+      vim.keymap.set("i", "<Tab>", function()
+        return vim.fn.pumvisible() == 1 and "<C-n>" or "<Tab>"
+      end, { expr = true, desc = "Next completion item" })
+      vim.keymap.set("i", "<S-Tab>", function()
+        return vim.fn.pumvisible() == 1 and "<C-p>" or "<S-Tab>"
+      end, { expr = true, desc = "Previous completion item" })
 
       -- Selection helpers: move selected lines and keep visual selection after indenting.
       vim.keymap.set("v", "J", ":m '>+1<cr>gv=gv", { desc = "Move selection down", silent = true })
