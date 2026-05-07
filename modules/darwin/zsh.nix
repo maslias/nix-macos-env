@@ -14,8 +14,10 @@
     fzf
     oh-my-zsh
     starship
+    vivid
     zsh-autosuggestions
     zsh-completions
+    zsh-fzf-tab
     zsh-syntax-highlighting
   ];
 
@@ -41,7 +43,13 @@
     compinit
 
     zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
-    zstyle ':completion:*' menu select
+    # fzf-tab renders the completion menu, so disable zsh's native menu selection.
+    zstyle ':completion:*' menu no
+
+    # Completion colors and fzf-tab previews.
+    export LS_COLORS="$(${pkgs.vivid}/bin/vivid generate cyberdream)"
+    zstyle ':completion:*' list-colors "''${(s.:.)LS_COLORS}"
+    zstyle ':fzf-tab:complete:cd:*' fzf-preview '${pkgs.coreutils}/bin/ls --color=always -la $realpath'
 
     # fzf: fuzzy finder keybinds/completion and clean default UI.
     export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
@@ -50,6 +58,9 @@
     source <(fzf --zsh)
 
     # Shared operator-friendly zsh plugins.
+    # fzf-tab must be loaded after compinit, and before plugins that wrap widgets.
+    source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.plugin.zsh
+
     # Load autosuggestions before syntax highlighting so highlighting can wrap widgets last.
     source ${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions/zsh-autosuggestions.zsh
     source ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
@@ -61,6 +72,11 @@
     # Ctrl-p/Ctrl-n search backward/forward for commands matching the current prefix.
     bindkey -M viins '^P' history-search-backward
     bindkey -M viins '^N' history-search-forward
+
+    # Autosuggestions: accept the whole suggestion with Ctrl-y in vi insert mode.
+    # In vi insert mode Ctrl-y is self-insert by default, so this avoids a useful conflict.
+    # Right arrow/end-of-line also accept suggestions through plugin defaults.
+    bindkey -M viins '^Y' autosuggest-accept
 
     # Shell behavior: quieter and better for pasted/documented commands.
     setopt no_beep

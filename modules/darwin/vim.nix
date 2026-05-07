@@ -3,6 +3,12 @@
 {
   environment.systemPackages = [ pkgs.vim ];
 
+  environment.variables = {
+    EDITOR = "vim";
+    VISUAL = "vim";
+    SUDO_EDITOR = "vim";
+  };
+
   environment.etc."vimrc".text = ''
     " Minimal shared Vim setup for editing config files and scripts.
     set number
