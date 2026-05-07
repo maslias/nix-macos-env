@@ -18,6 +18,7 @@ modules/darwin/nix.nix            # minimal Nix settings
 modules/darwin/packages.nix       # system packages, empty for now
 modules/darwin/macos-defaults.nix # Dock, Finder, desktop/widgets
 modules/darwin/security.nix       # firewall and low-risk privacy defaults
+modules/darwin/raycast.nix        # Raycast package and Spotlight shortcut handoff
 modules/darwin/alacritty.nix      # Alacritty terminal package and config
 modules/darwin/zsh.nix            # shared zsh defaults
 modules/darwin/vim.nix            # minimal Vim setup
@@ -49,6 +50,29 @@ scripts/setup.sh                  # small nix-darwin bootstrap/apply helper
 - screenshots go to `~/Pictures/Screenshots`
 - clicking wallpaper does not reveal desktop
 - desktop widgets are hidden
+
+### Raycast
+
+- install Raycast from nixpkgs
+- allow only Raycast as an unfree nixpkgs package
+- disable macOS Spotlight shortcuts so `Cmd-Space` can be used for Raycast
+
+Suggested Raycast hotkeys to set manually in Raycast Settings:
+
+| Action | Suggested hotkey | Notes |
+| --- | --- | --- |
+| Show Raycast | `Cmd-Space` | Replaces Spotlight; no repo conflict after applying this config. |
+| Window: Left Half | `Cmd-Control-H` | Vim-style and avoids macOS `Cmd-Option-H` / “Hide Others”. |
+| Window: Right Half | `Cmd-Control-L` | Low-conflict Vim-style binding. |
+| Window: Top Half | `Cmd-Control-K` | Low-conflict Vim-style binding. |
+| Window: Bottom Half | `Cmd-Control-J` | Low-conflict Vim-style binding. |
+| Window: Maximize | `Cmd-Control-M` | Prefer Raycast “Maximize” over macOS “Toggle Fullscreen” for tiling workflows. |
+| Open Alacritty | `Cmd-Enter` | Add as an app hotkey or Raycast Quicklink/script command. |
+| Open Terminal.app | `Cmd-Shift-Enter` | Add as an app hotkey or Raycast Quicklink/script command. |
+
+Avoided alternative: `Cmd-Option-H/J/K/L/M`. It is close to your original idea, but `Cmd-Option-H` conflicts with the common macOS/app “Hide Others” shortcut.
+
+Raycast Window Management needs macOS Accessibility permission on first use.
 
 ### Terminal
 
