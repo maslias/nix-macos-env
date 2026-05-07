@@ -2,6 +2,10 @@
   # Clear security wins without changing Gatekeeper policy.
   # Gatekeeper is intentionally not configured here; it should be a team decision.
 
+  # Allow sudo authentication with Touch ID / Apple Watch where supported.
+  # This may require a reboot after the first switch.
+  security.pam.services.sudo_local.touchIdAuth = true;
+
   networking.applicationFirewall = {
     enable = true;
     blockAllIncoming = false;

@@ -16,9 +16,11 @@ flake.nix                         # flake inputs and darwin/home-manager configu
 hosts/default.nix                 # generic host config, uses flake hostname
 home/default.nix                  # Home Manager user config
 home/starship.nix                 # Starship prompt with Cyberdream colors
+home/nvim.nix                     # Neovim with offline-safe native LSP, completion, Treesitter, fzf-lua
 modules/darwin/nix.nix            # minimal Nix settings
 modules/darwin/packages.nix       # shared CLI packages and helper scripts
 modules/darwin/macos-defaults.nix # Dock, Finder, desktop/widgets
+modules/darwin/power.nix          # AC/battery sleep and Low Power Mode settings
 modules/darwin/security.nix       # firewall and low-risk privacy defaults
 modules/darwin/raycast.nix        # Raycast package and Spotlight shortcut handoff
 modules/darwin/alacritty.nix      # Alacritty terminal package and config
@@ -52,6 +54,10 @@ scripts/setup.sh                  # small nix-darwin bootstrap/apply helper
 - screenshots go to `~/Pictures/Screenshots`
 - clicking wallpaper does not reveal desktop
 - desktop widgets are hidden
+
+### Login window
+
+- show username and password fields instead of selectable user icons
 
 ### Raycast
 
@@ -93,6 +99,14 @@ scripts/raycast-import-settings.sh path/to/default.rayconfig
 - set `TERM=xterm-256color` for broad compatibility
 - enable macOS Option-as-Alt behavior
 - add modest window padding, clipboard selection, and hidden mouse while typing
+
+### Neovim
+
+- install Neovim through Home Manager and set it as the user editor
+- use native Neovim 0.12 LSP and completion, without Mason or runtime downloads
+- install LSP servers and tools through Nix for bash, YAML, TOML, JSON, and Python
+- add Nix-managed Treesitter parsers, local SchemaStore data, mini.statusline, mini.bracketed, and fzf-lua
+- provide shared LSP, diagnostic, format, and fuzzy-finder keybindings
 
 ### Shell prompt
 
@@ -136,10 +150,18 @@ scripts/raycast-import-settings.sh path/to/default.rayconfig
 - improve search defaults
 - add EditorConfig support
 
+### Power
+
+- on AC power, disable computer sleep, display sleep, and disk sleep
+- on battery, sleep/display-sleep/disk-sleep after 15 minutes idle
+- enable macOS Low Power Mode on battery when supported
+- disable macOS screensaver globally; battery display sleep handles the 15-minute battery behavior
+
 ### Privacy / security
 
 Nix-managed where stable:
 
+- enable Touch ID / Apple Watch authentication for `sudo` where supported
 - enable macOS application firewall
 - enable firewall stealth mode
 - reduce Apple personalized ads

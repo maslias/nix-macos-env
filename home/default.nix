@@ -3,6 +3,7 @@
 {
   imports = [
     ./browsers.nix
+    ./nvim.nix
     ./starship.nix
   ];
 

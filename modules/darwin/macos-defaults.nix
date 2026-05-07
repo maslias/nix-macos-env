@@ -17,6 +17,10 @@
       FXPreferredViewStyle = "clmv"; # Column view by default.
     };
 
+    loginwindow = {
+      SHOWFULLNAME = true; # Show username/password fields instead of user icons.
+    };
+
     screencapture = {
       location = "~/Pictures/Screenshots";
       type = "png";
