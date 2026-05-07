@@ -26,7 +26,7 @@
 
       # Inspired by the previous Oh My Posh zen prompt:
       # host, separator, full path, git info, separated devbox marker, duration right prompt.
-      format = "$hostname 󰄾 $directory$git_branch$custom.git_dirty$custom.devbox\n$character";
+      format = "$hostname 󰄾 $directory$git_branch\${custom.git_dirty}\${custom.devbox}\n$character";
       right_format = "$cmd_duration";
 
       hostname = {
