@@ -37,6 +37,7 @@ in
   nixpkgs.config.allowUnfreePredicate = pkg:
     builtins.elem (lib.getName pkg) [
       "google-chrome"
+      "obsidian"
       "raycast"
       "vscode"
     ];
