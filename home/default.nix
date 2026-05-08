@@ -6,6 +6,7 @@
     ./iterm2.nix
     ./nvim.nix
     ./starship.nix
+    ./tmux.nix
   ];
 
   home.username = username;
