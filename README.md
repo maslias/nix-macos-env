@@ -17,6 +17,9 @@ hosts/default.nix                 # generic host config, uses flake hostname
 home/default.nix                  # Home Manager user config
 home/starship.nix                 # Starship prompt with Cyberdream colors
 home/nvim.nix                     # Neovim with offline-safe native LSP, completion, Treesitter, fzf-lua
+home/tmux.nix                     # tmux config in ~/.config/tmux/tmux.conf
+home/vim.nix                      # user Vim config in ~/.config/vim/vimrc
+home/zsh.nix                      # user zsh config in ~/.config/zsh/.zshrc
 modules/darwin/nix.nix            # minimal Nix settings
 modules/darwin/rosetta.nix        # Rosetta 2 for x86_64 binaries on Apple Silicon
 modules/darwin/packages.nix       # shared CLI packages and helper scripts
@@ -25,8 +28,7 @@ modules/darwin/power.nix          # AC/battery sleep and Low Power Mode settings
 modules/darwin/security.nix       # firewall and low-risk privacy defaults
 modules/darwin/raycast.nix        # Raycast package and Spotlight shortcut handoff
 modules/darwin/alacritty.nix      # Alacritty terminal package and config
-modules/darwin/zsh.nix            # shared zsh defaults
-modules/darwin/vim.nix            # minimal Vim setup
+modules/darwin/zsh.nix            # global zsh bootstrap for ZDOTDIR
 modules/darwin/system.nix         # required nix-darwin system basics
 users/default.nix                 # macOS user path, parameterized by flake username
 scripts/setup.sh                  # small nix-darwin bootstrap/apply helper
@@ -234,10 +236,16 @@ The `hosts/default.nix` and `users/default.nix` modules are generic and consume 
 
 ## Apply
 
-Run the setup script. If Nix is missing, it installs Determinate Nix first, then applies nix-darwin with Home Manager enabled:
+Run the setup script. If Nix is missing, it installs Determinate Nix first, copies the repo to the canonical location `~/.config/nix-macos` when needed, applies nix-darwin with Home Manager enabled, then runs mandatory privacy hardening with `macos-privacy-check --apply`:
 
 ```sh
 ./scripts/setup.sh
+```
+
+To skip the mandatory privacy hardening only for debugging or recovery:
+
+```sh
+./scripts/setup.sh --skip-privacy
 ```
 
 Or run nix-darwin directly, replacing the flake attribute with your configured hostname:

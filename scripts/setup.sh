@@ -2,7 +2,36 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$repo_root"
+canonical_repo_dir="${NIX_MACOS_REPO_DIR:-$HOME/.config/nix-macos}"
+skip_privacy=false
+skip_rehome=false
+forward_args=()
+
+usage() {
+  cat <<'EOF'
+Usage: ./scripts/setup.sh [options]
+
+Options:
+  --skip-privacy   Do not run macos-privacy-check --apply after nix-darwin switch
+  --skip-rehome    Run from the current checkout instead of copying to ~/.config/nix-macos
+  -h, --help       Show this help
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --skip-privacy) skip_privacy=true ;;
+    --skip-rehome) skip_rehome=true ;;
+    -h|--help) usage; exit 0 ;;
+    *) usage >&2; exit 2 ;;
+  esac
+  shift
+done
+
+forward_args=(--skip-rehome)
+if [[ "$skip_privacy" == true ]]; then
+  forward_args+=(--skip-privacy)
+fi
 
 if [[ "$(uname -s)" != "Darwin" ]]; then
   echo "error: this setup is for macOS/nix-darwin only" >&2
@@ -19,6 +48,56 @@ nix-darwin will ask for administrator privileges when needed.
 EOF
   exit 1
 fi
+
+same_path() {
+  [[ "$(cd "$1" && pwd -P)" == "$(cd "$2" && pwd -P)" ]]
+}
+
+rehome_repo_if_needed() {
+  if [[ "$skip_rehome" == true ]]; then
+    return 0
+  fi
+
+  if [[ -d "$canonical_repo_dir" ]] && same_path "$repo_root" "$canonical_repo_dir"; then
+    return 0
+  fi
+
+  if [[ -e "$canonical_repo_dir" ]]; then
+    if [[ -f "$canonical_repo_dir/flake.nix" && -x "$canonical_repo_dir/scripts/setup.sh" ]]; then
+      cat <<EOF
+Using existing canonical checkout:
+  $canonical_repo_dir
+EOF
+      exec "$canonical_repo_dir/scripts/setup.sh" "${forward_args[@]}"
+    fi
+
+    cat >&2 <<EOF
+error: canonical repo path already exists but does not look like this setup repo:
+  $canonical_repo_dir
+
+Move it away or set NIX_MACOS_REPO_DIR to another location.
+EOF
+    exit 1
+  fi
+
+  cat <<EOF
+Copying setup repository to canonical location:
+  from: $repo_root
+  to:   $canonical_repo_dir
+EOF
+
+  mkdir -p "$(dirname "$canonical_repo_dir")"
+  rsync -a \
+    --exclude '/result' \
+    --exclude '/.direnv' \
+    --exclude '/.DS_Store' \
+    "$repo_root/" "$canonical_repo_dir/"
+
+  exec "$canonical_repo_dir/scripts/setup.sh" "${forward_args[@]}"
+}
+
+rehome_repo_if_needed
+cd "$repo_root"
 
 ensure_nix_on_path() {
   if command -v nix >/dev/null 2>&1; then
@@ -89,6 +168,7 @@ Applying nix-darwin configuration
   flake:    .#$flake_hostname
   user:     $flake_username
   mac user: $current_user
+  privacy:  $([[ "$skip_privacy" == true ]] && echo skipped || echo 'apply after switch')
 EOF
 
 if [[ "$flake_username" != "$current_user" ]]; then
@@ -120,8 +200,33 @@ export SUDO_ASKPASS="$askpass_file"
 
 if command -v darwin-rebuild >/dev/null 2>&1; then
   darwin_rebuild_bin="$(command -v darwin-rebuild)"
-  exec sudo -A -H "$darwin_rebuild_bin" switch --flake ".#$flake_hostname"
+  sudo -A -H "$darwin_rebuild_bin" switch --flake ".#$flake_hostname"
 else
   nix_bin="$(command -v nix)"
-  exec sudo -A -H "$nix_bin" --extra-experimental-features "nix-command flakes" run nix-darwin -- switch --flake ".#$flake_hostname"
+  sudo -A -H "$nix_bin" --extra-experimental-features "nix-command flakes" run nix-darwin -- switch --flake ".#$flake_hostname"
+fi
+
+if [[ "$skip_privacy" == true ]]; then
+  cat <<'EOF'
+
+Skipping privacy hardening because --skip-privacy was given.
+EOF
+  exit 0
+fi
+
+cat <<'EOF'
+
+Applying mandatory macOS privacy hardening
+EOF
+
+# Refresh sudo timestamp for macos-privacy-check, which intentionally uses
+# sudo -n internally so it never blocks mid-apply.
+sudo -A -v
+
+if command -v macos-privacy-check >/dev/null 2>&1; then
+  macos-privacy-check --apply
+elif [[ -x /run/current-system/sw/bin/macos-privacy-check ]]; then
+  /run/current-system/sw/bin/macos-privacy-check --apply
+else
+  ./scripts/macos-privacy-check.sh --apply
 fi

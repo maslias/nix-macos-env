@@ -3,7 +3,7 @@
 {
   home.packages = [ pkgs.tmux ];
 
-  home.file.".tmux.conf".text = ''
+  xdg.configFile."tmux/tmux.conf".text = ''
     # tmux configuration managed by Home Manager.
     # Local changes should be made in home/tmux.nix.
 
@@ -90,7 +90,7 @@
     # ─────────────────────────────────────────────────────────────────────────
     # Keep bindings mnemonic and prefix-scoped to avoid conflicts with shells,
     # Neovim, terminal shortcuts, and macOS system shortcuts.
-    bind-key r source-file ~/.tmux.conf \; display-message "tmux config reloaded"
+    bind-key r source-file ~/.config/tmux/tmux.conf \; display-message "tmux config reloaded"
 
     bind-key | split-window -h -c "#{pane_current_path}"
     bind-key - split-window -v -c "#{pane_current_path}"

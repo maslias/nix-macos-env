@@ -13,7 +13,6 @@
     ../modules/darwin/terminal-appearance.nix
     ../modules/darwin/alacritty.nix
     ../modules/darwin/zsh.nix
-    ../modules/darwin/vim.nix
     ../modules/darwin/system.nix
     ../users
   ];

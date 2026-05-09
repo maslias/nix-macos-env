@@ -22,6 +22,10 @@ let
 
   profileName = "Cyberdream";
   profileGuid = "nix-managed-cyberdream";
+  # iTerm2 expects the macOS PostScript font name here. The Nerd Fonts
+  # package registers "JetBrainsMono Nerd Font Mono" as JetBrainsMonoNFM-Regular.
+  fontName = "JetBrainsMonoNFM-Regular";
+  fontSize = "18";
 
   profile = {
     Name = profileName;
@@ -29,8 +33,8 @@ let
 
     # Match modules/darwin/alacritty.nix as closely as iTerm2 supports.
     "Terminal Type" = "xterm-256color";
-    "Normal Font" = "JetBrainsMonoNerdFontMono-Regular 18";
-    "Non Ascii Font" = "JetBrainsMonoNerdFontMono-Regular 18";
+    "Normal Font" = "${fontName} ${fontSize}";
+    "Non Ascii Font" = "${fontName} ${fontSize}";
     "Use Non-ASCII Font" = false;
     "Use Bold Font" = true;
     "Use Italic Font" = true;
