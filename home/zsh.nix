@@ -1,5 +1,22 @@
 { pkgs, ... }:
 
+let
+  pathSetup = ''
+    # ZDOTDIR means ~/.zprofile is no longer read. Preserve external tools that
+    # install outside Nix/Home Manager, including Homebrew and Pi.
+    if [[ -x /opt/homebrew/bin/brew ]]; then
+      eval "$(/opt/homebrew/bin/brew shellenv)"
+    fi
+
+    typeset -U path PATH
+    for dir in "$HOME/.pi/agent/bin" "$HOME/.local/share/pi-node/current/bin" "$HOME/.local/bin"; do
+      if [[ -d "$dir" ]]; then
+        path=("$dir" $path)
+      fi
+    done
+    export PATH
+  '';
+in
 {
   home.packages = with pkgs; [
     fzf
@@ -16,9 +33,18 @@
     ZDOTDIR = "$HOME/.config/zsh";
   };
 
+  xdg.configFile."zsh/.zprofile".text = ''
+    # zsh login setup managed by Home Manager.
+    # Local changes should be made in home/zsh.nix.
+
+${pathSetup}
+  '';
+
   xdg.configFile."zsh/.zshrc".text = ''
     # zsh configuration managed by Home Manager.
     # Local changes should be made in home/zsh.nix.
+
+${pathSetup}
 
     # Vim should use its XDG config without requiring ~/.vimrc.
     export VIMINIT='source ~/.config/vim/vimrc'
