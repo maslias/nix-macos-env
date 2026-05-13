@@ -115,7 +115,7 @@ Custom cross-tool bindings intentionally avoid `Cmd-*`, `Option/Alt-*`, and `Ctr
 | `Ctrl-,` | tmux in Alacritty | previous window |
 | `Ctrl-.` | tmux in Alacritty | next window |
 
-`Ctrl-,` and `Ctrl-.` are implemented with Alacritty keyboard bindings that emit xterm `modifyOtherKeys` sequences. tmux parses those as `C-,` / `C-.`. This avoids macOS `Cmd-*`, `Option/Alt-*`, `Ctrl-Shift-*`, and `Ctrl-Arrow` conflicts while still providing prefix-free tmux window navigation.
+`Ctrl-,` and `Ctrl-.` are the validated tmux window-navigation bindings for this setup. Alacritty emits xterm `modifyOtherKeys` sequences for these punctuation chords, and tmux parses them as `C-,` / `C-.`. This avoids macOS `Cmd-*`, `Option/Alt-*`, unreliable `Ctrl-Shift-*` terminal chords, and `Ctrl-Arrow` Mission Control/text-navigation conflicts while still providing prefix-free tmux window navigation.
 
 #### Vim / Neovim editor basics
 
