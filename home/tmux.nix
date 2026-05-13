@@ -306,18 +306,12 @@ in
       bind-key -T copy-mode-vi Y send-keys -X copy-pipe-and-cancel "${tmuxYankLog}/bin/tmux-yank-log"
 
       # Fast global navigation. Panes use Ctrl-h/j/k/l via vim-tmux-navigator.
-      # Alacritty emits CSI-u sequences for Ctrl-Tab/Ctrl-Shift-Tab. tmux 3.6
-      # recognizes those as C-Tab/C-S-Tab, so bind the real tmux key names.
-      # Keep UserKeys as a fallback if a terminal passes the sequences through
-      # without tmux's extended-key parser naming them.
+      # Alacritty emits xterm modifyOtherKeys sequences for Ctrl-Tab and
+      # Ctrl-Shift-Tab; tmux parses them as C-Tab and C-S-Tab.
       set -s extended-keys on
-      set -s extended-keys-format csi-u
-      set -s user-keys[0] "\e[9;5u"
-      set -s user-keys[1] "\e[9;6u"
+      set -s extended-keys-format xterm
       bind-key -n C-Tab next-window
       bind-key -n C-S-Tab previous-window
-      bind-key -n User0 next-window
-      bind-key -n User1 previous-window
 
       # Layout: default split keys, but preserve the current pane path.
       bind-key % split-window -h -c "#{pane_current_path}"

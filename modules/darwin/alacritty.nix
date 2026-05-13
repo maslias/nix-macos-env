@@ -47,17 +47,17 @@ let
     [mouse]
     hide_when_typing = true
 
-    # tmux window navigation. Ctrl-Tab and Ctrl-Shift-Tab are emitted as
-    # explicit CSI-u style sequences and bound in tmux as UserKeys.
+    # tmux window navigation. Emit xterm modifyOtherKeys sequences so tmux can
+    # parse these as C-Tab and C-S-Tab instead of relying on UserKeys.
     [[keyboard.bindings]]
     key = "Tab"
     mods = "Control"
-    chars = "\u001b[9;5u"
+    chars = "\u001b[27;5;9~"
 
     [[keyboard.bindings]]
     key = "Tab"
     mods = "Control|Shift"
-    chars = "\u001b[9;6u"
+    chars = "\u001b[27;6;9~"
 
     # Cyberdream dark palette: https://github.com/scottmckendry/cyberdream.nvim/tree/main/extras/alacritty
     [colors.primary]
