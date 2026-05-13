@@ -47,6 +47,18 @@ let
     [mouse]
     hide_when_typing = true
 
+    # tmux window navigation. Ctrl-, and Ctrl-. do not have standard terminal
+    # control codes, so emit explicit CSI-u style sequences and bind those in tmux.
+    [[keyboard.bindings]]
+    key = "Comma"
+    mods = "Control"
+    chars = "\u001b[44;5u"
+
+    [[keyboard.bindings]]
+    key = "Period"
+    mods = "Control"
+    chars = "\u001b[46;5u"
+
     # Cyberdream dark palette: https://github.com/scottmckendry/cyberdream.nvim/tree/main/extras/alacritty
     [colors.primary]
     background = "#16181a"

@@ -112,8 +112,10 @@ Custom cross-tool bindings intentionally avoid `Cmd-*`, `Option/Alt-*`, and `Ctr
 | `Ctrl-j` | Vim, Neovim, tmux | move to lower split/pane |
 | `Ctrl-k` | Vim, Neovim, tmux | move to upper split/pane |
 | `Ctrl-l` | Vim, Neovim, tmux | move to right split/pane |
-| `Ctrl-,` | tmux | previous window |
-| `Ctrl-.` | tmux | next window |
+| `Ctrl-,` | tmux in Alacritty | previous window |
+| `Ctrl-.` | tmux in Alacritty | next window |
+
+`Ctrl-,` and `Ctrl-.` are implemented with Alacritty keyboard bindings that emit explicit CSI-u style escape sequences, then tmux maps those sequences with `User0`/`User1`. This avoids macOS `Cmd-*`, `Option/Alt-*`, and `Ctrl-Arrow` conflicts while still providing prefix-free tmux window navigation.
 
 #### Vim / Neovim editor basics
 
