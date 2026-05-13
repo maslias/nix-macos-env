@@ -48,16 +48,16 @@ let
     hide_when_typing = true
 
     # tmux window navigation. Emit xterm modifyOtherKeys sequences so tmux can
-    # parse these as C-Tab and C-S-Tab instead of relying on UserKeys.
+    # parse punctuation chords as C-, and C-. without using Shift/Alt/Cmd.
     [[keyboard.bindings]]
-    key = "Tab"
+    key = ","
     mods = "Control"
-    chars = "\u001b[27;5;9~"
+    chars = "\u001b[27;5;44~"
 
     [[keyboard.bindings]]
-    key = "Tab"
-    mods = "Control|Shift"
-    chars = "\u001b[27;6;9~"
+    key = "."
+    mods = "Control"
+    chars = "\u001b[27;5;46~"
 
     # Cyberdream dark palette: https://github.com/scottmckendry/cyberdream.nvim/tree/main/extras/alacritty
     [colors.primary]
