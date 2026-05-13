@@ -90,6 +90,92 @@ Avoided alternative: `Cmd-Option-H/J/K/L/M`. It is close to your original idea, 
 
 Raycast Window Management needs macOS Accessibility permission on first use.
 
+### Keybinding strategy
+
+This repo keeps keybindings small, mnemonic, and macOS-aware. The main rule is:
+
+```text
+Ctrl-h/j/k/l   move inside the current workspace: Vim/Neovim splits and tmux panes
+Ctrl-, / Ctrl-. move between tmux windows without using the tmux prefix
+Space ...      Neovim/Vim editor commands
+Ctrl-b ...     tmux management commands
+zsh vi mode    shell editing
+```
+
+Custom cross-tool bindings intentionally avoid `Cmd-*`, `Option/Alt-*`, and `Ctrl-Arrow` because those commonly conflict with macOS, terminal apps, text navigation, Mission Control/Spaces, or Raycast. The only listed `Alt-*` binding is fzf's standard shell-local `Alt-c` widget.
+
+#### Shared navigation
+
+| Binding | Context | Action |
+| --- | --- | --- |
+| `Ctrl-h` | Vim, Neovim, tmux | move to left split/pane |
+| `Ctrl-j` | Vim, Neovim, tmux | move to lower split/pane |
+| `Ctrl-k` | Vim, Neovim, tmux | move to upper split/pane |
+| `Ctrl-l` | Vim, Neovim, tmux | move to right split/pane |
+| `Ctrl-,` | tmux | previous window |
+| `Ctrl-.` | tmux | next window |
+
+#### Vim / Neovim editor basics
+
+| Binding | Action |
+| --- | --- |
+| `Space w` | save/update current buffer |
+| `Space q` | quit current window |
+| `Esc` | clear search highlight |
+
+#### Neovim groups
+
+| Binding | Action |
+| --- | --- |
+| `Space f f` | find files |
+| `Space f g` | live grep |
+| `Space f b` | find buffers |
+| `Space f h` | find help |
+| `Space f k` | find keymaps |
+| `Space f s` | document symbols |
+| `Space f r` | LSP references picker |
+| `Space f d` | document diagnostics picker |
+| `Space c a` | code action |
+| `Space c r` | rename symbol |
+| `Space c f` | format buffer |
+| `Space d d` | line diagnostics |
+| `Space d l` | diagnostics to location list |
+| `Space s r` | split right |
+| `Space s d` | split down |
+| `Space s x` | close split |
+
+Native LSP-style motions are kept: `gd` definition, `gD` declaration, `gi` implementation, `gr` references, and `K` hover.
+
+#### tmux management
+
+| Binding | Action |
+| --- | --- |
+| `Ctrl-b r` | reload tmux config |
+| `Ctrl-b :` | tmux command prompt |
+| `Ctrl-b c` | new window in current path |
+| `Ctrl-b %` | split right in current path |
+| `Ctrl-b "` | split down in current path |
+| `Ctrl-b h/j/k/l` | select pane |
+| `Ctrl-b H/J/K/L` | resize pane |
+| `Ctrl-b S` / `Ctrl-b R` | save / restore tmux session |
+| `Ctrl-b P` | toggle pane logging |
+| `Ctrl-b G` | capture screen |
+| `Ctrl-b A` | save complete pane history |
+| `Ctrl-b X` | clear pane history |
+
+#### zsh / fzf
+
+| Binding | Action |
+| --- | --- |
+| vi insert/normal mode | shell editing model |
+| `Ctrl-r` | fuzzy history search |
+| `Ctrl-t` | fuzzy file insert |
+| `Alt-c` | fuzzy `cd` from fzf default bindings |
+| `Ctrl-y` | accept autosuggestion / fzf selection |
+| `Ctrl-p` / `Ctrl-n` | prefix history search backward / forward |
+| `Ctrl-x Ctrl-e` | edit command line in `$EDITOR` |
+| `v` in zsh normal mode | edit command line in `$EDITOR` |
+
 To bootstrap Raycast settings from an exported seed file:
 
 ```sh

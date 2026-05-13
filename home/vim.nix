@@ -10,6 +10,8 @@
     " Local changes should be made in home/vim.nix.
 
     " Runtime files do not belong in ~/.config. Keep viminfo in XDG_STATE_HOME.
+    let mapleader = " "
+
     let s:vim_state_dir = empty($XDG_STATE_HOME) ? expand('~/.local/state/vim') : $XDG_STATE_HOME . '/vim'
     call mkdir(s:vim_state_dir, 'p')
     execute 'set viminfo+=n' . fnameescape(s:vim_state_dir . '/viminfo')
@@ -37,5 +39,16 @@
 
     syntax on
     filetype plugin indent on
+
+    " Shared minimal keybindings. Keep Vim close to Neovim without adding plugins.
+    nnoremap <leader>w :update<CR>
+    nnoremap <leader>q :quit<CR>
+    nnoremap <Esc> :nohlsearch<CR>
+
+    " Split navigation mirrors Neovim/tmux pane navigation.
+    nnoremap <C-h> <C-w>h
+    nnoremap <C-j> <C-w>j
+    nnoremap <C-k> <C-w>k
+    nnoremap <C-l> <C-w>l
   '';
 }

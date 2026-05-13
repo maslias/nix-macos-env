@@ -306,14 +306,15 @@ in
       bind-key -T copy-mode-vi Y send-keys -X copy-pipe-and-cancel "${tmuxYankLog}/bin/tmux-yank-log"
 
       # Fast global navigation. Panes use Ctrl-h/j/k/l via vim-tmux-navigator;
-      # windows use Ctrl-Left/Right to avoid conflicts with Neovim's Ctrl-n/p.
-      bind-key -n C-Right next-window
-      bind-key -n C-Left previous-window
+      # windows use Ctrl-,/Ctrl-. to avoid macOS Option/Cmd shortcuts and
+      # terminal word-movement keys.
+      bind-key -n C-, previous-window
+      bind-key -n C-. next-window
 
       # Layout: default split keys, but preserve the current pane path.
       bind-key % split-window -h -c "#{pane_current_path}"
       bind-key '"' split-window -v -c "#{pane_current_path}"
-      bind-key C new-window -c "#{pane_current_path}"
+      bind-key c new-window -c "#{pane_current_path}"
 
       # Pane movement and resize. Ctrl-h/j/k/l is handled by vim-tmux-navigator.
       bind-key h select-pane -L
@@ -334,7 +335,7 @@ in
       # - Copy-mode yank/open: y yank, Y yank+save as tmux-yank log,
       #   p put, o open, e open in editor
       # - Vim navigation: C-h/C-j/C-k/C-l across Vim and tmux panes
-      # - Windows: C-Right next window, C-Left previous window
+      # - Windows: C-. next window, C-, previous window
 
       # Copy-mode basics.
       bind-key -T copy-mode-vi v send-keys -X begin-selection

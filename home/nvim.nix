@@ -182,9 +182,10 @@
           miniclue.gen_clues.windows(),
           miniclue.gen_clues.z(),
 
-          { mode = "n", keys = "<Leader>f", desc = "+find/format" },
-          { mode = "n", keys = "<Leader>r", desc = "+rename/references" },
+          { mode = "n", keys = "<Leader>f", desc = "+find" },
           { mode = "n", keys = "<Leader>c", desc = "+code" },
+          { mode = "n", keys = "<Leader>d", desc = "+diagnostics" },
+          { mode = "n", keys = "<Leader>s", desc = "+splits" },
         },
         window = {
           delay = 400,
@@ -349,9 +350,9 @@
           map("n", "gr", vim.lsp.buf.references, "LSP: references")
           map("n", "gi", vim.lsp.buf.implementation, "LSP: implementation")
           map("n", "K", vim.lsp.buf.hover, "LSP: hover")
-          map("n", "<leader>rn", vim.lsp.buf.rename, "LSP: rename")
+          map("n", "<leader>cr", vim.lsp.buf.rename, "LSP: rename")
           map("n", "<leader>ca", vim.lsp.buf.code_action, "LSP: code action")
-          map("n", "<leader>f", format_buffer, "Format buffer")
+          map("n", "<leader>cf", format_buffer, "Format buffer")
         end,
       })
 
@@ -359,8 +360,26 @@
       -- Shared keymaps
       --------------------------------------------------------------------------------------------------
       vim.keymap.set("n", "<leader>w", "<cmd>update<cr>", { desc = "Save buffer" })
-      vim.keymap.set("n", "<leader>x", "<cmd>quit<cr>", { desc = "Quit" })
+      vim.keymap.set("n", "<leader>q", "<cmd>quit<cr>", { desc = "Quit" })
       vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<cr>", { desc = "Clear search highlight" })
+
+      local function navigate_split_or_tmux(direction, tmux_flag)
+        local before = vim.api.nvim_get_current_win()
+        vim.cmd.wincmd(direction)
+        local after = vim.api.nvim_get_current_win()
+        if before == after and vim.env.TMUX then
+          vim.system({ "tmux", "select-pane", tmux_flag })
+        end
+      end
+
+      vim.keymap.set("n", "<C-h>", function() navigate_split_or_tmux("h", "-L") end, { desc = "Move left split/pane" })
+      vim.keymap.set("n", "<C-j>", function() navigate_split_or_tmux("j", "-D") end, { desc = "Move down split/pane" })
+      vim.keymap.set("n", "<C-k>", function() navigate_split_or_tmux("k", "-U") end, { desc = "Move up split/pane" })
+      vim.keymap.set("n", "<C-l>", function() navigate_split_or_tmux("l", "-R") end, { desc = "Move right split/pane" })
+
+      vim.keymap.set("n", "<leader>sr", "<cmd>vsplit<cr>", { desc = "Split right" })
+      vim.keymap.set("n", "<leader>sd", "<cmd>split<cr>", { desc = "Split down" })
+      vim.keymap.set("n", "<leader>sx", "<cmd>close<cr>", { desc = "Close split" })
 
       local function trigger_completion()
         for _, client in ipairs(vim.lsp.get_clients({ bufnr = 0 })) do
@@ -389,8 +408,8 @@
 
       vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Previous diagnostic" })
       vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
-      vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, { desc = "Line diagnostics" })
-      vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Diagnostics to location list" })
+      vim.keymap.set("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Line diagnostics" })
+      vim.keymap.set("n", "<leader>dl", vim.diagnostic.setloclist, { desc = "Diagnostics to location list" })
 
       local fzf = require("fzf-lua")
       vim.keymap.set("n", "<leader>ff", fzf.files, { desc = "Find files" })
