@@ -3,12 +3,9 @@
 {
   home.packages = [ pkgs.vim ];
 
-  # Avoid ~/.vimrc. Vim reads this environment variable during startup.
-  home.sessionVariables = {
-    VIMINIT = "source $HOME/.config/vim/vimrc";
-  };
-
-  xdg.configFile."vim/vimrc".text = ''
+  # Keep Vim configuration Vim-specific. Do not set VIMINIT globally because
+  # Neovim also reads it and would skip ~/.config/nvim/init.lua.
+  home.file.".vimrc".text = ''
     " Vim configuration managed by Home Manager.
     " Local changes should be made in home/vim.nix.
 
