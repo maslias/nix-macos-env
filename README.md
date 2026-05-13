@@ -96,7 +96,7 @@ This repo keeps keybindings small, mnemonic, and macOS-aware. The main rule is:
 
 ```text
 Ctrl-h/j/k/l   move inside the current workspace: Vim/Neovim splits and tmux panes
-Ctrl-, / Ctrl-. move between tmux windows without using the tmux prefix
+Ctrl-Tab / Ctrl-Shift-Tab move between tmux windows without using the tmux prefix
 Space ...      Neovim/Vim editor commands
 Ctrl-b ...     tmux management commands
 zsh vi mode    shell editing
@@ -112,10 +112,10 @@ Custom cross-tool bindings intentionally avoid `Cmd-*`, `Option/Alt-*`, and `Ctr
 | `Ctrl-j` | Vim, Neovim, tmux | move to lower split/pane |
 | `Ctrl-k` | Vim, Neovim, tmux | move to upper split/pane |
 | `Ctrl-l` | Vim, Neovim, tmux | move to right split/pane |
-| `Ctrl-,` | tmux in Alacritty | previous window |
-| `Ctrl-.` | tmux in Alacritty | next window |
+| `Ctrl-Tab` | tmux in Alacritty | next window |
+| `Ctrl-Shift-Tab` | tmux in Alacritty | previous window |
 
-`Ctrl-,` and `Ctrl-.` are implemented with Alacritty keyboard bindings that emit explicit CSI-u style escape sequences, then tmux maps those sequences with `User0`/`User1`. This avoids macOS `Cmd-*`, `Option/Alt-*`, and `Ctrl-Arrow` conflicts while still providing prefix-free tmux window navigation.
+`Ctrl-Tab` and `Ctrl-Shift-Tab` are implemented with Alacritty keyboard bindings that emit explicit CSI-u style escape sequences, then tmux maps those sequences with `User0`/`User1`. This avoids macOS `Cmd-*`, `Option/Alt-*`, and `Ctrl-Arrow` conflicts while still providing prefix-free tmux window navigation.
 
 #### Vim / Neovim editor basics
 

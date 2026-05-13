@@ -306,12 +306,12 @@ in
       bind-key -T copy-mode-vi Y send-keys -X copy-pipe-and-cancel "${tmuxYankLog}/bin/tmux-yank-log"
 
       # Fast global navigation. Panes use Ctrl-h/j/k/l via vim-tmux-navigator.
-      # Ctrl-,/Ctrl-. do not have standard terminal control codes, so Alacritty
-      # emits explicit CSI-u style sequences and tmux maps them as UserKeys.
-      set -s user-keys[0] "\e[44;5u"
-      set -s user-keys[1] "\e[46;5u"
-      bind-key -n User0 previous-window
-      bind-key -n User1 next-window
+      # Ctrl-Tab/Ctrl-Shift-Tab use explicit Alacritty CSI-u style sequences
+      # mapped as tmux UserKeys for reliable prefix-free window navigation.
+      set -s user-keys[0] "\e[9;5u"
+      set -s user-keys[1] "\e[9;6u"
+      bind-key -n User0 next-window
+      bind-key -n User1 previous-window
 
       # Layout: default split keys, but preserve the current pane path.
       bind-key % split-window -h -c "#{pane_current_path}"
@@ -337,7 +337,7 @@ in
       # - Copy-mode yank/open: y yank, Y yank+save as tmux-yank log,
       #   p put, o open, e open in editor
       # - Vim navigation: C-h/C-j/C-k/C-l across Vim and tmux panes
-      # - Windows: C-. next window, C-, previous window
+      # - Windows: Ctrl-Tab next window, Ctrl-Shift-Tab previous window
 
       # Copy-mode basics.
       bind-key -T copy-mode-vi v send-keys -X begin-selection
