@@ -109,9 +109,48 @@ let
       esac
     '';
   };
+
+  tmuxYankLog = pkgs.writeShellApplication {
+    name = "tmux-yank-log";
+    runtimeInputs = [ pkgs.coreutils pkgs.tmux ];
+    text = ''
+      selection_file="$(mktemp)"
+      trap 'rm -f "$selection_file"' EXIT
+      cat > "$selection_file"
+
+      get_tmux_option() {
+        option="$1"
+        default_value="$2"
+        option_value="$(tmux show-option -gqv "$option")"
+        if [ -z "$option_value" ]; then
+          printf '%s\n' "$default_value"
+        else
+          printf '%s\n' "$option_value"
+        fi
+      }
+
+      # Match tmux-logging's filename convention:
+      # tmux-<kind>-#{session_name}-#{window_index}-#{pane_index}-%Y%m%dT%H%M%S.log
+      filename_suffix='#{session_name}-#{window_index}-#{pane_index}-%Y%m%dT%H%M%S.log'
+      logging_path="$(get_tmux_option "@logging-path" "$HOME")"
+      yank_log_path="$(get_tmux_option "@yank-log-path" "$logging_path")"
+      yank_log_filename="$(get_tmux_option "@yank-log-filename" "tmux-yank-$filename_suffix")"
+
+      file="$(tmux display-message -p "$yank_log_path/$yank_log_filename")"
+      mkdir -p "''${file%/*}"
+      cp "$selection_file" "$file"
+
+      if command -v pbcopy >/dev/null 2>&1; then
+        pbcopy < "$selection_file"
+        tmux display-message "Yanked selection copied and saved to $file"
+      else
+        tmux display-message "Yanked selection saved to $file"
+      fi
+    '';
+  };
 in
 {
-  home.packages = [ tmuxContext ];
+  home.packages = [ tmuxContext tmuxYankLog ];
 
   programs.tmux = {
     enable = true;
@@ -264,6 +303,7 @@ in
       unbind-key -T copy-mode-vi -q '!'
       unbind-key -T copy-mode-vi -q F15
       unbind-key -T copy-mode-vi -q F16
+      bind-key -T copy-mode-vi Y send-keys -X copy-pipe-and-cancel "${tmuxYankLog}/bin/tmux-yank-log"
 
       # Fast global navigation. Panes use Ctrl-h/j/k/l via vim-tmux-navigator;
       # windows use Ctrl-Left/Right to avoid conflicts with Neovim's Ctrl-n/p.
@@ -291,7 +331,8 @@ in
       # - Recovery: prefix S save, prefix R restore
       # - Logging: prefix P toggle recording, prefix G capture screen,
       #   prefix A save complete history, prefix X clear pane history
-      # - Copy-mode yank/open: y yank, p put, o open, e open in editor
+      # - Copy-mode yank/open: y yank, Y yank+save as tmux-yank log,
+      #   p put, o open, e open in editor
       # - Vim navigation: C-h/C-j/C-k/C-l across Vim and tmux panes
       # - Windows: C-Right next window, C-Left previous window
 
