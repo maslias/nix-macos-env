@@ -115,7 +115,7 @@ Custom cross-tool bindings intentionally avoid `Cmd-*`, `Option/Alt-*`, and `Ctr
 | `Ctrl-Tab` | tmux in Alacritty | next window |
 | `Ctrl-Shift-Tab` | tmux in Alacritty | previous window |
 
-`Ctrl-Tab` and `Ctrl-Shift-Tab` are implemented with Alacritty keyboard bindings that emit explicit CSI-u style escape sequences, then tmux maps those sequences with `User0`/`User1`. This avoids macOS `Cmd-*`, `Option/Alt-*`, and `Ctrl-Arrow` conflicts while still providing prefix-free tmux window navigation.
+`Ctrl-Tab` and `Ctrl-Shift-Tab` are implemented with Alacritty keyboard bindings that emit explicit CSI-u style escape sequences. tmux 3.6 recognizes those as `C-Tab` / `C-S-Tab`; `User0` / `User1` fallback mappings are also kept for terminals that pass the raw sequences through. This avoids macOS `Cmd-*`, `Option/Alt-*`, and `Ctrl-Arrow` conflicts while still providing prefix-free tmux window navigation.
 
 #### Vim / Neovim editor basics
 
