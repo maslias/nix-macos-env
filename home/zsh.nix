@@ -15,6 +15,11 @@ let
       fi
     done
     export PATH
+
+    # Make Vim the default editor in shells managed by this project.
+    export EDITOR=vim
+    export VISUAL=vim
+    export SUDO_EDITOR=vim
   '';
 in
 {

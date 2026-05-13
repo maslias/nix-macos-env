@@ -3,7 +3,7 @@
 {
   programs.neovim = {
     enable = true;
-    defaultEditor = true;
+    defaultEditor = false;
     viAlias = true;
     vimAlias = true;
     withPython3 = false;
@@ -404,9 +404,10 @@
     '';
   };
 
+  # Use Vim as the default editor for shell tools, git, sudoedit, etc.
   home.sessionVariables = {
-    EDITOR = "nvim";
-    VISUAL = "nvim";
-    SUDO_EDITOR = "nvim";
+    EDITOR = "vim";
+    VISUAL = "vim";
+    SUDO_EDITOR = "vim";
   };
 }

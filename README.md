@@ -110,7 +110,7 @@ scripts/raycast-import-settings.sh path/to/default.rayconfig
 
 ### Neovim
 
-- install Neovim through Home Manager and set it as the user editor
+- install Neovim through Home Manager while keeping Vim as the default user editor
 - use native Neovim 0.12 LSP and completion, without Mason or runtime downloads
 - install LSP servers and tools through Nix for bash, YAML, Nix, TOML, JSON, and Python
 - add Nix-managed Treesitter parsers, local SchemaStore data, Cyberdream colors, mini.statusline, mini.bracketed, and fzf-lua
