@@ -110,6 +110,122 @@ let
     '';
   };
 
+  tmuxCleanLogFilter = pkgs.writeShellApplication {
+    name = "tmux-clean-log-filter";
+    runtimeInputs = [ pkgs.python3 ];
+    text = ''
+      exec python3 -u -c '
+      import re
+      import sys
+
+      line = []
+      col = 0
+
+      def put(ch):
+          global col, line
+          if col == len(line):
+              line.append(ch)
+          else:
+              line[col] = ch
+          col += 1
+
+      def flush_line():
+          global col, line
+          sys.stdout.write("".join(line).rstrip() + "\n")
+          sys.stdout.flush()
+          line = []
+          col = 0
+
+      while True:
+          ch = sys.stdin.read(1)
+          if ch == "":
+              if line:
+                  sys.stdout.write("".join(line).rstrip())
+                  sys.stdout.flush()
+              break
+
+          if ch == "\x1b":
+              nxt = sys.stdin.read(1)
+              if nxt == "[":
+                  seq = ""
+                  while True:
+                      c = sys.stdin.read(1)
+                      if c == "":
+                          break
+                      seq += c
+                      if "@" <= c <= "~":
+                          break
+                  if not seq:
+                      continue
+                  cmd = seq[-1]
+                  params = seq[:-1]
+                  nums = [int(n) for n in re.findall(r"\d+", params)]
+                  n = nums[0] if nums else 1
+                  if cmd == "D":
+                      col = max(0, col - n)
+                  elif cmd == "C":
+                      col += n
+                  elif cmd == "G":
+                      col = max(0, n - 1)
+                  elif cmd == "K":
+                      mode = nums[0] if nums else 0
+                      if mode == 0:
+                          del line[col:]
+                      elif mode == 1:
+                          line[:col] = [" "] * col
+                      elif mode == 2:
+                          line = []
+                          col = 0
+                  continue
+              if nxt == "]":
+                  prev = ""
+                  while True:
+                      c = sys.stdin.read(1)
+                      if c == "" or c == "\a" or (prev == "\x1b" and c == "\\"):
+                          break
+                      prev = c
+                  continue
+              continue
+
+          if ch == "\b":
+              col = max(0, col - 1)
+          elif ch == "\r":
+              col = 0
+          elif ch == "\n":
+              flush_line()
+          elif ch == "\t" or ch >= " ":
+              put(ch)
+      '
+    '';
+  };
+
+  tmuxStartCleanLogging = pkgs.writeShellApplication {
+    name = "tmux-start-clean-logging";
+    runtimeInputs = [ pkgs.coreutils pkgs.tmux ];
+    text = ''
+      get_tmux_option() {
+        option="$1"
+        default_value="$2"
+        option_value="$(tmux show-option -gqv "$option")"
+        if [ -z "$option_value" ]; then
+          printf '%s\n' "$default_value"
+        else
+          printf '%s\n' "$option_value"
+        fi
+      }
+
+      filename_suffix='#{session_name}-#{window_index}-#{pane_index}-%Y%m%dT%H%M%S.log'
+      logging_path="$(get_tmux_option "@logging-path" "$HOME")"
+      logging_filename="$(get_tmux_option "@logging-filename" "tmux-$filename_suffix")"
+      file="$(tmux display-message -p "$logging_path/$logging_filename")"
+
+      mkdir -p "''${file%/*}"
+      printf -v quoted_file '%q' "$file"
+      tmux pipe-pane "exec ${tmuxCleanLogFilter}/bin/tmux-clean-log-filter >> $quoted_file"
+      tmux display-message "Started clean logging to $file"
+    '';
+  };
+
   tmuxYankLog = pkgs.writeShellApplication {
     name = "tmux-yank-log";
     runtimeInputs = [ pkgs.coreutils pkgs.tmux ];
@@ -150,7 +266,7 @@ let
   };
 in
 {
-  home.packages = [ tmuxContext tmuxYankLog ];
+  home.packages = [ tmuxContext tmuxCleanLogFilter tmuxStartCleanLogging tmuxYankLog ];
 
   programs.tmux = {
     enable = true;
@@ -274,12 +390,13 @@ in
 
       # Left/session module: orange background normally. State is indicated by
       # changing the whole left color: prefix -> yellow, readonly -> red.
-      # If pane logging is active, add a white REC marker before the session name.
-      set -g status-left "#[fg=#16181a,bg=#ffbd5e,bold]#{?client_prefix,#[fg=#16181a#,bg=#f1ff5e#,bold],}#{?client_readonly,#[fg=#16181a#,bg=#ff6e5e#,bold],}#{?pane_pipe, #[fg=#ffffff]● REC #[fg=#16181a], }#S #[default]  "
+      # If pane logging is active, add a REC marker before the session name:
+      # cyberdream red on orange/yellow backgrounds, white on red backgrounds.
+      set -g status-left "#[fg=#16181a,bg=#ffbd5e,bold]#{?client_prefix,#[fg=#16181a#,bg=#f1ff5e#,bold],}#{?client_readonly,#[fg=#16181a#,bg=#ff6e5e#,bold],}#{?pane_pipe, #[fg=#ff6e5e]#{?client_readonly,#[fg=#ffffff],}● REC #[fg=#16181a], }#S #[default]  "
 
-      # Right side: connection context, then a far-right one-space module that
-      # mirrors the left module's dynamic color.
-      set -g status-right "#(${tmuxContext}/bin/tmux-context '#{pane_id}' '#{pane_current_command}' '#{pane_title}' '#{pane_tty}')#[fg=#16181a,bg=#ffbd5e,bold]#{?client_prefix,#[fg=#16181a#,bg=#f1ff5e#,bold],}#{?client_readonly,#[fg=#16181a#,bg=#ff6e5e#,bold],} #[default]"
+      # Right side: connection context, then a far-right module that mirrors the
+      # left module's dynamic color and shows a circle-only REC indicator.
+      set -g status-right "#(${tmuxContext}/bin/tmux-context '#{pane_id}' '#{pane_current_command}' '#{pane_title}' '#{pane_tty}')#[fg=#16181a,bg=#ffbd5e,bold]#{?client_prefix,#[fg=#16181a#,bg=#f1ff5e#,bold],}#{?client_readonly,#[fg=#16181a#,bg=#ff6e5e#,bold],}#{?pane_pipe, #[fg=#ff6e5e]#{?client_readonly,#[fg=#ffffff],}●#[fg=#16181a],} #[default]"
 
       set -g window-status-format "#[fg=#3c4048]#I:#W"
       set -g window-status-current-format "#[fg=#ff6e9f,bold]#I:#W"
@@ -304,6 +421,13 @@ in
       unbind-key -T copy-mode-vi -q F15
       unbind-key -T copy-mode-vi -q F16
       bind-key -T copy-mode-vi Y send-keys -X copy-pipe-and-cancel "${tmuxYankLog}/bin/tmux-yank-log"
+
+      # Override tmux-logging's raw live pipe. Raw pipe-pane logs terminal
+      # control bytes (backspace, cursor movement, bracketed-paste toggles),
+      # which makes live logs look binary/garbled. Keep tmux-logging for screen
+      # capture/history, but run live logs through our cleaner.
+      unbind-key -q P
+      bind-key P if-shell -F '#{pane_pipe}' 'pipe-pane; display-message "Ended clean logging"' 'run-shell "${tmuxStartCleanLogging}/bin/tmux-start-clean-logging"'
 
       # Fast global navigation. Panes use Ctrl-h/j/k/l via vim-tmux-navigator.
       # Windows use Ctrl-,/Ctrl-. through Alacritty xterm modifyOtherKeys
