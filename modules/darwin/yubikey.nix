@@ -99,7 +99,7 @@ in
     # smart card for login/unlock and removes ordinary password-only fallback for
     # affected accounts. The activation guard refuses to apply unless enough
     # local smart-card pairings already exist for the console user.
-    system.activationScripts.yubikeySmartCardOnly.text = lib.mkIf cfg.smartCardOnly.enable ''
+    system.activationScripts.postActivation.text = lib.mkIf cfg.smartCardOnly.enable (lib.mkAfter ''
       console_user="$(/usr/bin/stat -f %Su /dev/console 2>/dev/null || true)"
       if [ -z "$console_user" ] || [ "$console_user" = "root" ] || [ "$console_user" = "loginwindow" ]; then
         echo "error: cannot determine a logged-in console user for smart-card-only enforcement" >&2
@@ -116,6 +116,6 @@ in
       echo "Enabling macOS smart-card-only login policy for paired users"
       /usr/bin/defaults write /Library/Preferences/com.apple.security.smartcard enforceSmartCard -bool true
       /bin/chmod 0644 /Library/Preferences/com.apple.security.smartcard.plist
-    '';
+    '');
   };
 }
