@@ -282,9 +282,10 @@ scripts/raycast-import-settings.sh path/to/default.rayconfig
 - keep sudo MFA opt-in with `gdca.yubikey.sudoMfa.enable = true` after backup/recovery validation
 - provide `yubikey-piv-login-setup` to create a self-signed RSA PIV certificate and optionally pair it for macOS smart-card login
 - provide `yubikey-piv-login-status` to report smart-card identities, pairings, and FileVault smart-card status
+- provide `yubikey-policy-check` to report local operational-policy compliance without changing auth settings
 - do not enforce smart-card-only login or FileVault YubiKey unlock in the current phase
 
-See [`docs/yubikey.md`](docs/yubikey.md), [`docs/yubikey-sudo-mfa.md`](docs/yubikey-sudo-mfa.md), [`docs/yubikey-piv-login.md`](docs/yubikey-piv-login.md), and [`docs/yubikey-plan.md`](docs/yubikey-plan.md).
+See [`docs/yubikey.md`](docs/yubikey.md), [`docs/yubikey-sudo-mfa.md`](docs/yubikey-sudo-mfa.md), [`docs/yubikey-piv-login.md`](docs/yubikey-piv-login.md), [`docs/yubikey-operations.md`](docs/yubikey-operations.md), and [`docs/yubikey-plan.md`](docs/yubikey-plan.md).
 
 ### Privacy / security
 

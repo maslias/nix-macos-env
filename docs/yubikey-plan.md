@@ -41,7 +41,7 @@ This phase must not change login, FileVault, or PAM enforcement.
 
 ## Phase 5: operational policy
 
-- Define lost-key, new-machine, and key-rotation procedures.
-- Define recovery-key escrow process for FileVault.
-- Define whether one or two enrolled keys are mandatory before enforcement.
-- Add checks that report compliance without silently locking users out.
+- Define lost-key, new-machine, and key-rotation procedures. **Done in `docs/yubikey-operations.md`.**
+- Define recovery-key escrow process for FileVault. **Done in `docs/yubikey-operations.md`; FileVault remains password/recovery-key based.**
+- Define whether one or two enrolled keys are mandatory before enforcement. **Done: primary and backup are required before sudo/login enforcement.**
+- Add checks that report compliance without silently locking users out. **Done via `yubikey-policy-check`; it reports local state only and makes no auth changes.**

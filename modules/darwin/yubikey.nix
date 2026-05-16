@@ -62,6 +62,11 @@ in
         name = "yubikey-piv-login-status";
         text = builtins.readFile ../../scripts/yubikey-piv-login-status.sh;
       })
+
+      (writeShellApplication {
+        name = "yubikey-policy-check";
+        text = builtins.readFile ../../scripts/yubikey-policy-check.sh;
+      })
     ];
 
     # Disabled by default. When enabled, sudo requires a registered YubiKey via

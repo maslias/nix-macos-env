@@ -15,6 +15,7 @@ Phase 1 and the safe part of Phase 2 are implemented:
 - `yubikey-sudo-test` validates sudo MFA with a guided `sudo -k` / `sudo -v` flow.
 - `yubikey-piv-login-setup` prepares a self-signed PIV certificate for optional macOS smart-card login pairing.
 - `yubikey-piv-login-status` reports macOS smart-card identities, pairings, and FileVault smart-card status.
+- `yubikey-policy-check` reports local operational-policy compliance without changing authentication settings.
 - `scripts/setup.sh` runs `yubikey-enroll` by default.
 - `scripts/setup.sh` reports `yubikey-status` after enrollment.
 - Use `scripts/setup.sh --skip-yubikey` for test runs or machines that must not enroll/check a key.
@@ -46,6 +47,7 @@ The nix-darwin module `modules/darwin/yubikey.nix` installs:
 - `yubikey-sudo-test`
 - `yubikey-piv-login-setup`
 - `yubikey-piv-login-status`
+- `yubikey-policy-check`
 
 ## Setup behavior
 
@@ -168,6 +170,20 @@ yubikey-piv-login-status
 ```
 
 See [`yubikey-piv-login.md`](yubikey-piv-login.md).
+
+Report local operational-policy compliance:
+
+```sh
+yubikey-policy-check
+```
+
+If this workstation requires two PIV/smart-card pairings, run:
+
+```sh
+yubikey-policy-check --require-piv-pairings 2
+```
+
+See [`yubikey-operations.md`](yubikey-operations.md).
 
 Run the check directly:
 

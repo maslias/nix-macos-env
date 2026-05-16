@@ -18,6 +18,7 @@ scripts=(
   yubikey-sudo-test.sh
   yubikey-piv-login-setup.sh
   yubikey-piv-login-status.sh
+  yubikey-policy-check.sh
 )
 
 for name in "${scripts[@]}"; do
