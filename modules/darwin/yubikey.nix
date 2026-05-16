@@ -106,7 +106,7 @@ in
         exit 1
       fi
 
-      pairing_count="$(/usr/bin/sc_auth list -u "$console_user" 2>/dev/null | /usr/bin/awk 'NF { count++ } END { print count + 0 }')"
+      pairing_count="$(/usr/sbin/sc_auth list -u "$console_user" 2>/dev/null | /usr/bin/awk 'NF { count++ } END { print count + 0 }')"
       if [ "$pairing_count" -lt ${minSmartCardPairings} ]; then
         echo "error: refusing to enable smart-card-only login for $console_user" >&2
         echo "error: found $pairing_count sc_auth pairing(s), require at least ${minSmartCardPairings}" >&2
