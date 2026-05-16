@@ -26,12 +26,21 @@ modules/darwin/packages.nix       # shared CLI packages and helper scripts
 modules/darwin/macos-defaults.nix # Dock, Finder, desktop/widgets
 modules/darwin/power.nix          # AC/battery sleep and Low Power Mode settings
 modules/darwin/security.nix       # firewall and low-risk privacy defaults
+modules/darwin/yubikey.nix        # YubiKey tooling and check helper
 modules/darwin/raycast.nix        # Raycast package and Spotlight shortcut handoff
 modules/darwin/alacritty.nix      # Alacritty terminal package and config
 modules/darwin/zsh.nix            # global zsh bootstrap for ZDOTDIR
 modules/darwin/system.nix         # required nix-darwin system basics
 users/default.nix                 # macOS user path, parameterized by flake username
 scripts/setup.sh                  # small nix-darwin bootstrap/apply helper
+scripts/yubikey-check.sh          # YubiKey tooling/device visibility check
+scripts/yubikey-enroll.sh         # local YubiKey enrollment inventory helper
+scripts/yubikey-harden.sh         # interactive PIN/PUK/FIDO hardening helper
+scripts/yubikey-status.sh         # YubiKey inventory/readiness status helper
+scripts/yubikey-sudo-register.sh  # pam_u2f sudo MFA registration helper
+scripts/yubikey-sudo-test.sh      # guided sudo MFA validation helper
+scripts/yubikey-piv-login-setup.sh # PIV smart-card login preparation helper
+scripts/yubikey-piv-login-status.sh # PIV smart-card login status helper
 ```
 
 ## What is configured now
@@ -240,6 +249,7 @@ scripts/raycast-import-settings.sh path/to/default.rayconfig
 - install fd (`fd`)
 - install bat (`bat`)
 - install tldr (`tldr`)
+- install YubiKey tooling (`ykman`, `yubico-piv-tool`, `opensc-tool`, `fido2-token`, `pamu2fcfg`), `yubikey-check`, `yubikey-enroll`, `yubikey-harden`, `yubikey-status`, `yubikey-sudo-register`, `yubikey-sudo-test`, `yubikey-piv-login-setup`, and `yubikey-piv-login-status`
 
 ### Vim
 
@@ -256,6 +266,25 @@ scripts/raycast-import-settings.sh path/to/default.rayconfig
 - on battery, sleep/display-sleep/disk-sleep after 15 minutes idle
 - enable macOS Low Power Mode on battery when supported
 - disable macOS screensaver globally; battery display sleep handles the 15-minute battery behavior
+
+### YubiKey
+
+- install YubiKey/FIDO/PIV tooling through `modules/darwin/yubikey.nix`
+- run `yubikey-enroll` by default from `scripts/setup.sh` after the nix-darwin switch
+- report `yubikey-status` readiness after enrollment
+- allow bypassing the YubiKey step with `scripts/setup.sh --skip-yubikey`
+- record local YubiKey enrollment inventory in `~/.config/nix-macos/yubikeys.tsv`
+- support primary/backup key role tracking with `yubikey-enroll --role primary|backup`
+- provide `yubikey-harden` to interactively change default PIV PIN/PUK/management key and set a FIDO2 PIN
+- provide `yubikey-status` to report inventory, inserted-key hardening, and readiness for future enforcement
+- provide `yubikey-sudo-register` to create the per-user pam_u2f mapping for sudo MFA
+- provide `yubikey-sudo-test` for guided sudo MFA validation
+- keep sudo MFA opt-in with `gdca.yubikey.sudoMfa.enable = true` after backup/recovery validation
+- provide `yubikey-piv-login-setup` to create a self-signed RSA PIV certificate and optionally pair it for macOS smart-card login
+- provide `yubikey-piv-login-status` to report smart-card identities, pairings, and FileVault smart-card status
+- do not enforce smart-card-only login or FileVault YubiKey unlock in the current phase
+
+See [`docs/yubikey.md`](docs/yubikey.md), [`docs/yubikey-sudo-mfa.md`](docs/yubikey-sudo-mfa.md), [`docs/yubikey-piv-login.md`](docs/yubikey-piv-login.md), and [`docs/yubikey-plan.md`](docs/yubikey-plan.md).
 
 ### Privacy / security
 

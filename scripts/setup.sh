@@ -5,6 +5,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 canonical_repo_dir="${NIX_MACOS_REPO_DIR:-$HOME/.config/nix-macos}"
 skip_privacy=false
 skip_rehome=false
+skip_yubikey=false
 forward_args=()
 
 usage() {
@@ -14,6 +15,7 @@ Usage: ./scripts/setup.sh [options]
 Options:
   --skip-privacy   Do not run macos-privacy-check --apply after nix-darwin switch
   --skip-rehome    Run from the current checkout instead of copying to ~/.config/nix-macos
+  --skip-yubikey   Do not run YubiKey enrollment during setup
   -h, --help       Show this help
 EOF
 }
@@ -22,6 +24,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --skip-privacy) skip_privacy=true ;;
     --skip-rehome) skip_rehome=true ;;
+    --skip-yubikey) skip_yubikey=true ;;
     -h|--help) usage; exit 0 ;;
     *) usage >&2; exit 2 ;;
   esac
@@ -31,6 +34,9 @@ done
 forward_args=(--skip-rehome)
 if [[ "$skip_privacy" == true ]]; then
   forward_args+=(--skip-privacy)
+fi
+if [[ "$skip_yubikey" == true ]]; then
+  forward_args+=(--skip-yubikey)
 fi
 
 if [[ "$(uname -s)" != "Darwin" ]]; then
@@ -169,6 +175,7 @@ Applying nix-darwin configuration
   user:     $flake_username
   mac user: $current_user
   privacy:  $([[ "$skip_privacy" == true ]] && echo skipped || echo 'apply after switch')
+  yubikey:  $([[ "$skip_yubikey" == true ]] && echo skipped || echo 'enroll after switch')
 EOF
 
 if [[ "$flake_username" != "$current_user" ]]; then
@@ -211,22 +218,55 @@ if [[ "$skip_privacy" == true ]]; then
 
 Skipping privacy hardening because --skip-privacy was given.
 EOF
+else
+  cat <<'EOF'
+
+Applying mandatory macOS privacy hardening
+EOF
+
+  # Refresh sudo timestamp for macos-privacy-check, which intentionally uses
+  # sudo -n internally so it never blocks mid-apply.
+  sudo -A -v
+
+  if command -v macos-privacy-check >/dev/null 2>&1; then
+    macos-privacy-check --apply
+  elif [[ -x /run/current-system/sw/bin/macos-privacy-check ]]; then
+    /run/current-system/sw/bin/macos-privacy-check --apply
+  else
+    ./scripts/macos-privacy-check.sh --apply
+  fi
+fi
+
+if [[ "$skip_yubikey" == true ]]; then
+  cat <<'EOF'
+
+Skipping YubiKey check because --skip-yubikey was given.
+EOF
   exit 0
 fi
 
 cat <<'EOF'
 
-Applying mandatory macOS privacy hardening
+Running mandatory YubiKey enrollment step
 EOF
 
-# Refresh sudo timestamp for macos-privacy-check, which intentionally uses
-# sudo -n internally so it never blocks mid-apply.
-sudo -A -v
-
-if command -v macos-privacy-check >/dev/null 2>&1; then
-  macos-privacy-check --apply
-elif [[ -x /run/current-system/sw/bin/macos-privacy-check ]]; then
-  /run/current-system/sw/bin/macos-privacy-check --apply
+if command -v yubikey-enroll >/dev/null 2>&1; then
+  yubikey-enroll
+elif [[ -x /run/current-system/sw/bin/yubikey-enroll ]]; then
+  /run/current-system/sw/bin/yubikey-enroll
 else
-  ./scripts/macos-privacy-check.sh --apply
+  ./scripts/yubikey-enroll.sh
+fi
+
+cat <<'EOF'
+
+Reporting YubiKey readiness status
+EOF
+
+if command -v yubikey-status >/dev/null 2>&1; then
+  yubikey-status
+elif [[ -x /run/current-system/sw/bin/yubikey-status ]]; then
+  /run/current-system/sw/bin/yubikey-status
+else
+  ./scripts/yubikey-status.sh
 fi

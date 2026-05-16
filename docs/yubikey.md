@@ -1,0 +1,191 @@
+# YubiKey setup
+
+This repository is being extended for YubiKey-backed workstation authentication for system administrators and infrastructure operators.
+
+## Current status
+
+Phase 1 and the safe part of Phase 2 are implemented:
+
+- YubiKey tools are installed by nix-darwin.
+- `yubikey-check` verifies the tools and detects inserted YubiKeys.
+- `yubikey-enroll` records local enrollment inventory for the current macOS user.
+- `yubikey-harden` interactively changes default PIV credentials and sets a FIDO2 PIN.
+- `yubikey-status` reports inventory, inserted-key hardening, and readiness for future enforcement.
+- `yubikey-sudo-register` creates a per-user pam_u2f mapping for optional sudo MFA.
+- `yubikey-sudo-test` validates sudo MFA with a guided `sudo -k` / `sudo -v` flow.
+- `yubikey-piv-login-setup` prepares a self-signed PIV certificate for optional macOS smart-card login pairing.
+- `yubikey-piv-login-status` reports macOS smart-card identities, pairings, and FileVault smart-card status.
+- `scripts/setup.sh` runs `yubikey-enroll` by default.
+- `scripts/setup.sh` reports `yubikey-status` after enrollment.
+- Use `scripts/setup.sh --skip-yubikey` for test runs or machines that must not enroll/check a key.
+
+The reusable YubiKey module defaults to **no authentication enforcement**. The `gdca-maintaince` host explicitly opts in to sudo MFA after validating both enrolled keys. This repo still does **not** enforce smart-card-only login or FileVault YubiKey unlock.
+
+## FileVault limitation
+
+FileVault pre-boot disk unlock remains password/recovery-key based. The YubiKey setup is for post-boot authentication such as macOS login/screen unlock, sudo MFA, SSH, VPN, or future service authentication.
+
+Do not depend on this repo to provide YubiKey-only FileVault disk unlock.
+
+## Tools installed
+
+The nix-darwin module `modules/darwin/yubikey.nix` installs:
+
+- `ykman` from `yubikey-manager`
+- `yubico-piv-tool`
+- `opensc-tool` from OpenSC
+- `fido2-token` from libfido2
+- `gpg`
+- `pinentry-mac`
+- `pam_u2f` / `pamu2fcfg`
+- `yubikey-check`
+- `yubikey-enroll`
+- `yubikey-harden`
+- `yubikey-status`
+- `yubikey-sudo-register`
+- `yubikey-sudo-test`
+- `yubikey-piv-login-setup`
+- `yubikey-piv-login-status`
+
+## Setup behavior
+
+Default setup requires and records a visible YubiKey after the nix-darwin switch, then prints readiness status:
+
+```sh
+./scripts/setup.sh
+```
+
+Skip the YubiKey step explicitly:
+
+```sh
+./scripts/setup.sh --skip-yubikey
+```
+
+Run enrollment directly:
+
+```sh
+yubikey-enroll
+```
+
+If multiple keys are inserted, choose one explicitly:
+
+```sh
+yubikey-enroll --serial 31021632
+```
+
+Track primary and backup key roles:
+
+```sh
+yubikey-enroll --role primary
+yubikey-enroll --role backup
+```
+
+If an older enrollment record exists without a role, re-record it as primary:
+
+```sh
+yubikey-enroll --role primary --force
+```
+
+Enrollment writes a local inventory record to:
+
+```text
+~/.config/nix-macos/yubikeys.tsv
+```
+
+Harden a key interactively:
+
+```sh
+yubikey-harden
+```
+
+Check hardening state without changing the key:
+
+```sh
+yubikey-harden --check-only
+```
+
+The hardening helper can change:
+
+- default PIV PIN
+- default PIV PUK
+- default PIV management key, replacing it with a random PIN-protected key
+- missing FIDO2 PIN
+
+Report workstation YubiKey status/readiness:
+
+```sh
+yubikey-status
+```
+
+Use strict mode in scripts/CI-style checks:
+
+```sh
+yubikey-status --strict
+```
+
+Register the inserted YubiKey for optional sudo MFA:
+
+```sh
+yubikey-sudo-register
+```
+
+Validate sudo MFA after enabling it:
+
+```sh
+yubikey-sudo-test
+```
+
+This writes the pam_u2f mapping to:
+
+```text
+~/.config/Yubico/u2f_keys
+```
+
+It does not enable sudo MFA by itself. Sudo MFA remains host-specific and opt-in in Nix:
+
+```nix
+gdca.yubikey.sudoMfa.enable = true;
+```
+
+Do not enable this on another host until a hardened backup key and a recovery/admin path are tested. See [`yubikey-sudo-mfa.md`](yubikey-sudo-mfa.md).
+
+Prepare a self-signed PIV certificate for optional macOS smart-card login:
+
+```sh
+yubikey-piv-login-setup
+```
+
+Optionally pair it to the local macOS user:
+
+```sh
+yubikey-piv-login-setup --pair
+```
+
+Report smart-card login status:
+
+```sh
+yubikey-piv-login-status
+```
+
+See [`yubikey-piv-login.md`](yubikey-piv-login.md).
+
+Run the check directly:
+
+```sh
+yubikey-check
+```
+
+For a non-blocking diagnostic:
+
+```sh
+yubikey-check --warn-only
+```
+
+## Operational recommendations
+
+- Each user should have at least two YubiKeys: primary and backup.
+- Record the first key with `yubikey-enroll --role primary` and the second key with `yubikey-enroll --role backup`.
+- Do not enable login or sudo enforcement on a host until the backup key and recovery process are tested.
+- Before enabling sudo MFA, run `yubikey-sudo-register` for each physical key that should authorize sudo.
+- Keep FileVault recovery keys escrowed outside the laptop.
+- Record YubiKey serial numbers in the organization's asset or credential inventory.

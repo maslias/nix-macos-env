@@ -9,6 +9,7 @@
     ../modules/darwin/macos-defaults.nix
     ../modules/darwin/power.nix
     ../modules/darwin/security.nix
+    ../modules/darwin/yubikey.nix
     ../modules/darwin/raycast.nix
     ../modules/darwin/terminal-appearance.nix
     ../modules/darwin/alacritty.nix

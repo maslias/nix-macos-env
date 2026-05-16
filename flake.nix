@@ -38,6 +38,13 @@
           };
           home-manager.users.${username} = import ./home;
         }
+        {
+          # Host-specific opt-in: gdca-maintaince has enrolled, hardened, and
+          # tested primary and backup YubiKeys for sudo MFA. Do not enable this
+          # globally for new machines until their own keys and recovery path are
+          # validated.
+          gdca.yubikey.sudoMfa.enable = true;
+        }
       ];
     };
 
