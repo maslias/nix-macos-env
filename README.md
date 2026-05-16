@@ -31,6 +31,7 @@ Technical project overview is in [`PROJECT.md`](PROJECT.md).
 - `yubikey-policy-check --require-piv-pairings 2` — YubiKey policy report
 - `yubikey-smartcard-policy-status --require-pairings 2` — smart-card-only login status
 - `yubikey-filevault-status` — read-only FileVault smart-card discovery
+- `power-status` — read-only AC/battery sleep policy report
 
 ## Important safety constraints
 

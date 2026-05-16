@@ -150,7 +150,22 @@ yubikey-filevault-status
 
 Do not run FileVault smart-card enable commands unless the documented blocker is resolved.
 
-## 9. Emergency rollback notes
+## 9. Validate power policy
+
+Run:
+
+```sh
+power-status
+```
+
+Expected policy:
+
+- plugged into power: system/display/disk sleep disabled
+- on battery: system/display/disk sleep after 15 minutes
+
+For external monitors, macOS shows login/unlock on the active/main display. The config keeps AC sleep disabled for docked use, but display arrangement/main-display selection remains a macOS setting.
+
+## 10. Emergency rollback notes
 
 Disable smart-card-only login preference from an open admin shell:
 

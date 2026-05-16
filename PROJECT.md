@@ -53,6 +53,7 @@ FileVault smart-card unlock was investigated and is currently blocked: `sc_auth 
 - `yubikey-smartcard-policy-status` — smart-card-only policy status
 - `yubikey-filevault-status` — read-only FileVault smart-card discovery
 - `macos-privacy-check` — privacy/security report and optional apply helper
+- `power-status` — read-only AC/battery sleep policy report
 
 ## Safety boundaries
 

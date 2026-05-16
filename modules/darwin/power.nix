@@ -3,12 +3,14 @@
 {
   # nix-darwin's first-class `power.sleep.*` options apply one global profile via
   # systemsetup. Use pmset directly here so AC power and battery can differ.
-  system.activationScripts.powerProfiles.text = lib.mkAfter ''
-    # AC power: keep the machine, display, and disk awake indefinitely.
-    /usr/bin/pmset -c sleep 0 displaysleep 0 disksleep 0
+  system.activationScripts.power.text = lib.mkAfter ''
+    # AC power / docked use: keep the machine, display, and disk awake
+    # indefinitely. This also makes external-display unlock/login more reliable
+    # when the Mac is plugged in and used in clamshell/docked workflows.
+    /usr/bin/pmset -c sleep 0 displaysleep 0 disksleep 0 womp 1 acwake 1 powernap 0
 
     # Battery power: sleep/display-sleep after 15 minutes of idle time.
-    /usr/bin/pmset -b sleep 15 displaysleep 15 disksleep 15 || true
+    /usr/bin/pmset -b sleep 15 displaysleep 15 disksleep 15 powernap 0 || true
 
     # Prefer macOS Low Power Mode on battery when supported; keep it off on AC.
     /usr/bin/pmset -b lowpowermode 1 || true
