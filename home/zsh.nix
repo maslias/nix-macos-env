@@ -51,8 +51,9 @@ ${pathSetup}
 
 ${pathSetup}
 
-    # Vim should use its XDG config without requiring ~/.vimrc.
-    export VIMINIT='source ~/.config/vim/vimrc'
+    # Vim uses the Home Manager-managed ~/.vimrc. Do not set VIMINIT here:
+    # Neovim also reads VIMINIT and Vim fails if an XDG vimrc target is absent.
+    unset VIMINIT
 
     # Runtime files do not belong in ~/.config. Keep config in XDG_CONFIG_HOME,
     # history/state in XDG_STATE_HOME, and generated completion caches in XDG_CACHE_HOME.
