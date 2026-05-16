@@ -89,8 +89,9 @@ About to validate sudo MFA with:
   sudo -k
   sudo -v
 
-Keep another administrator shell open while testing. When prompted, use the
-YubiKey FIDO2 PIN and touch the YubiKey if it blinks.
+Keep another administrator shell open while testing. With the current host
+policy, touch the YubiKey if it blinks; FIDO2 PIN entry is not required for the
+YubiKey sudo factor unless the Nix sudoMfa.pinVerification option is enabled.
 EOF
 
 read -r -p "Run sudo validation now? [y/N] " answer

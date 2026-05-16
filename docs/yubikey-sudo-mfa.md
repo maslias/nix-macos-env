@@ -6,7 +6,13 @@ Module default state: **disabled**. The `gdca-maintaince` host opts in after man
 
 ## What sudo MFA means
 
-When enabled, `sudo` requires a registered YubiKey before the normal sudo authentication stack continues. With this repo's default configuration, the YubiKey credential requires FIDO2 PIN verification.
+When enabled, `sudo` requires a registered YubiKey before the normal sudo authentication stack continues. The module default requires FIDO2 PIN verification, but the validated `gdca-maintaince` host uses touch-only YubiKey sudo MFA for lower daily friction:
+
+```nix
+gdca.yubikey.sudoMfa.pinVerification = false;
+```
+
+Touch-only sudo MFA still requires the registered physical YubiKey and normal sudo authentication; it does not make sudo passwordless.
 
 This does not replace:
 
@@ -52,6 +58,8 @@ This does not replace:
 
    ```nix
    gdca.yubikey.sudoMfa.enable = true;
+   # Optional: touch-only YubiKey factor instead of FIDO2 PIN + touch.
+   gdca.yubikey.sudoMfa.pinVerification = false;
    ```
 
 ## Testing after enabling
@@ -71,9 +79,9 @@ sudo -v
 
 Expected behavior:
 
-- sudo asks for YubiKey/FIDO2 interaction
-- enter the FIDO2 PIN when prompted
-- touch the YubiKey if it blinks
+- sudo asks for YubiKey/FIDO interaction
+- with touch-only policy, touch the YubiKey if it blinks
+- with `pinVerification = true`, enter the FIDO2 PIN when prompted
 - normal sudo authentication then continues
 
 For check-only diagnostics without running sudo:

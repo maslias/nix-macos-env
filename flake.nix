@@ -44,6 +44,9 @@
           # globally for new machines until their own keys and recovery path are
           # validated.
           gdca.yubikey.sudoMfa.enable = true;
+          # Daily sudo still requires a registered YubiKey touch plus the normal
+          # sudo authentication stack, but does not require the FIDO2 PIN.
+          gdca.yubikey.sudoMfa.pinVerification = false;
 
           # Host-specific smart-card-only login enforcement. This removes normal
           # password-only login/unlock fallback after activation; FileVault still

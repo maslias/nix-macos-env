@@ -3,7 +3,7 @@ set -euo pipefail
 
 username="$(id -un)"
 authfile="${YUBIKEY_PAM_U2F_AUTHFILE:-$HOME/.config/Yubico/u2f_keys}"
-pin_verification=true
+pin_verification=false
 
 usage() {
   cat <<'EOF'
@@ -16,7 +16,7 @@ must opt in separately.
 Options:
   --username USER        Username to register (default: current user)
   --authfile PATH        Mapping file path (default: ~/.config/Yubico/u2f_keys)
-  --no-pin-verification  Do not require FIDO2 PIN verification for this credential
+  --pin-verification     Require FIDO2 PIN verification for this credential
   -h, --help             Show this help
 EOF
 }
@@ -33,7 +33,7 @@ while [[ $# -gt 0 ]]; do
       authfile="$2"
       shift
       ;;
-    --no-pin-verification) pin_verification=false ;;
+    --pin-verification) pin_verification=true ;;
     -h|--help) usage; exit 0 ;;
     *) usage >&2; exit 2 ;;
   esac
@@ -64,7 +64,8 @@ Registering YubiKey for sudo MFA
   authfile: $authfile
   keys:     ${serials[*]}
 
-You may be prompted for the YubiKey FIDO2 PIN and/or asked to touch the key.
+You may be asked to touch the key. If --pin-verification was used, you may
+also be prompted for the YubiKey FIDO2 PIN.
 EOF
 
 args=(--username "$username")

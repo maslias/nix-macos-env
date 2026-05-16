@@ -3,13 +3,21 @@
 let
   cfg = config.gdca.yubikey;
   minSmartCardPairings = toString cfg.smartCardOnly.minimumPairings;
+  pamU2fPinVerification = if cfg.sudoMfa.pinVerification then "1" else "0";
   pamU2fLine = ''
-    auth       required       ${pkgs.pam_u2f}/lib/security/pam_u2f.so authfile=.config/Yubico/u2f_keys openasuser cue pinverification=1 userverification=0
+    auth       required       ${pkgs.pam_u2f}/lib/security/pam_u2f.so authfile=.config/Yubico/u2f_keys openasuser cue pinverification=${pamU2fPinVerification} userverification=0
   '';
 in
 {
   options.gdca.yubikey = {
-    sudoMfa.enable = lib.mkEnableOption "YubiKey pam_u2f MFA for sudo";
+    sudoMfa = {
+      enable = lib.mkEnableOption "YubiKey pam_u2f MFA for sudo";
+      pinVerification = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Require FIDO2 PIN verification for pam_u2f sudo MFA. Disable for touch-only YubiKey sudo MFA.";
+      };
+    };
 
     smartCardOnly = {
       enable = lib.mkEnableOption "macOS smart-card-only login policy using paired PIV identities";

@@ -149,6 +149,8 @@ It does not enable sudo MFA by itself. Sudo MFA remains host-specific and opt-in
 
 ```nix
 gdca.yubikey.sudoMfa.enable = true;
+# Optional lower-friction policy: require YubiKey touch but not FIDO2 PIN for sudo.
+gdca.yubikey.sudoMfa.pinVerification = false;
 ```
 
 Do not enable this on another host until a hardened backup key and a recovery/admin path are tested. See [`yubikey-sudo-mfa.md`](yubikey-sudo-mfa.md).

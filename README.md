@@ -281,6 +281,7 @@ scripts/raycast-import-settings.sh path/to/default.rayconfig
 - provide `yubikey-sudo-register` to create the per-user pam_u2f mapping for sudo MFA
 - provide `yubikey-sudo-test` for guided sudo MFA validation
 - keep sudo MFA opt-in with `gdca.yubikey.sudoMfa.enable = true` after backup/recovery validation
+- support `gdca.yubikey.sudoMfa.pinVerification = false` for touch-only YubiKey sudo MFA on validated hosts
 - provide `yubikey-piv-login-setup` to create a self-signed RSA PIV certificate and optionally pair it for macOS smart-card login
 - provide `yubikey-piv-login-status` to report smart-card identities, pairings, and FileVault smart-card status
 - provide `yubikey-policy-check` to report local operational-policy compliance without changing auth settings

@@ -19,7 +19,7 @@ For each admin/operator user on a protected Mac:
    - default PIV PIN changed
    - default PIV PUK changed
    - default PIV management key replaced/protected
-   - FIDO2 PIN set
+   - FIDO2 PIN set, even if sudo uses touch-only policy
 4. Register both keys for sudo MFA with `yubikey-sudo-register`.
 5. Pair both keys for macOS PIV/smart-card login if smart-card unlock is desired.
 6. Verify:
@@ -143,6 +143,7 @@ Before enabling sudo MFA on a host, confirm:
 
 - primary key enrolled, hardened, registered, and tested
 - backup key enrolled, hardened, registered, and tested
+- sudo MFA PIN policy chosen explicitly: `pinVerification = true` for FIDO2 PIN + touch, or `false` for touch-only YubiKey factor plus normal sudo auth
 - password/recovery/admin fallback tested
 - recovery steps documented for the operator
 
