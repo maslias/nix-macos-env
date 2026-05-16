@@ -17,6 +17,7 @@ Phase 1 and the safe part of Phase 2 are implemented:
 - `yubikey-piv-login-status` reports macOS smart-card identities, pairings, and FileVault smart-card status.
 - `yubikey-policy-check` reports local operational-policy compliance without changing authentication settings.
 - `yubikey-smartcard-policy-status` reports smart-card-only login policy state without changing authentication settings.
+- `yubikey-filevault-status` performs read-only FileVault smart-card unlock discovery.
 - `scripts/setup.sh` runs `yubikey-enroll` by default.
 - `scripts/setup.sh` reports `yubikey-status` after enrollment.
 - Use `scripts/setup.sh --skip-yubikey` for test runs or machines that must not enroll/check a key.
@@ -27,7 +28,7 @@ The reusable YubiKey module defaults to **no authentication enforcement**. The `
 
 FileVault pre-boot disk unlock remains password/recovery-key based. The YubiKey setup is for post-boot authentication such as macOS login/screen unlock, sudo MFA, SSH, VPN, or future service authentication.
 
-Do not depend on this repo to provide YubiKey-only FileVault disk unlock.
+Do not depend on this repo to provide YubiKey-only FileVault disk unlock. Use `yubikey-filevault-status` for read-only discovery only; see [`yubikey-filevault.md`](yubikey-filevault.md).
 
 ## Tools installed
 
@@ -50,6 +51,7 @@ The nix-darwin module `modules/darwin/yubikey.nix` installs:
 - `yubikey-piv-login-status`
 - `yubikey-policy-check`
 - `yubikey-smartcard-policy-status`
+- `yubikey-filevault-status`
 
 ## Setup behavior
 

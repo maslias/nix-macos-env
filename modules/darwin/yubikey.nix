@@ -95,6 +95,11 @@ in
         name = "yubikey-smartcard-policy-disable";
         text = builtins.readFile ../../scripts/yubikey-smartcard-policy-disable.sh;
       })
+
+      (writeShellApplication {
+        name = "yubikey-filevault-status";
+        text = builtins.readFile ../../scripts/yubikey-filevault-status.sh;
+      })
     ];
 
     # Disabled by default. When enabled, sudo requires a registered YubiKey via
