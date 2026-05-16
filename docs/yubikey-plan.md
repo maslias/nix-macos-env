@@ -37,7 +37,7 @@ This phase must not change login, FileVault, or PAM enforcement.
 - Add documented PIV certificate provisioning flow. **Done for self-signed certificates via `yubikey-piv-login-setup`.**
 - Pair the certificate with the local macOS user. **Supported explicitly with `yubikey-piv-login-setup --pair`; not automatic.**
 - Verify login and screen unlock with fallback account/recovery procedure. **Done manually with both keys; status helper added via `yubikey-piv-login-status`.**
-- Do not claim FileVault pre-boot YubiKey unlock support. **Still not enabled; read-only discovery added via `yubikey-filevault-status`.**
+- Do not claim FileVault pre-boot YubiKey unlock support. **Blocked on this Mac: `sc_auth filevault` reports missing SecureToken despite `sysadminctl`, `fdesetup list`, and APFS volume-owner checks showing the user is FileVault/SecureToken authorized. Read-only discovery is available via `yubikey-filevault-status`.**
 
 ## Phase 4b: optional smart-card-only macOS login
 

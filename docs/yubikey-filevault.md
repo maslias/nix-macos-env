@@ -38,15 +38,44 @@ This helper runs read-only checks only:
 
 It does not enable, disable, or modify FileVault, smart-card pairings, PAM, login policy, or YubiKeys.
 
-## Observed discovery note
+## Observed discovery and blocker
 
-On this machine, initial read-only `sc_auth filevault` status returned:
+On this machine, `sc_auth filevault` status returns the same error with and without `sudo`, for both paired YubiKey public-key hashes:
+
+```sh
+sudo /usr/sbin/sc_auth filevault -o status -u "$USER" -h 299A66FA60D26D3EF35383B190362290A1C6A345
+sudo /usr/sbin/sc_auth filevault -o status -u "$USER" -h 81996693D9C672D509867641795BDA68D65F13D5
+```
 
 ```text
 SecureToken for user mliebreich is needed and is not present
 ```
 
-Other read-only checks show the user has SecureToken and appears as an APFS cryptographic user/volume owner. Do not proceed to enablement until this mismatch is understood. It may indicate that `sc_auth filevault` expects additional FileVault authorization state, has limited support on this macOS/hardware combination, or behaves differently when smart-card-only login is already enforced.
+Other read-only checks contradict that message:
+
+```text
+sysadminctl -secureTokenStatus mliebreich
+  Secure token is ENABLED for user mliebreich
+
+sudo fdesetup list
+  mliebreich,9DB1DCA0-9B6A-464F-94A3-32853C5E2987
+
+diskutil apfs listUsers /
+  9DB1DCA0-9B6A-464F-94A3-32853C5E2987
+  Type: Local Open Directory User
+  Volume Owner: Yes
+```
+
+`dscl` also shows both smart-card token identities in `AuthenticationAuthority`.
+
+Conclusion for this Mac: FileVault smart-card/YubiKey unlock is **blocked** for the local `sc_auth filevault` + self-signed PIV path. Do not run `sc_auth filevault -o enable` unless Apple/MDM/platform-specific guidance explains and resolves this mismatch.
+
+Possible future investigation paths:
+
+- Apple enterprise/MDM-supported smart-card FileVault workflow
+- internal CA-issued PIV certificates instead of self-signed certificates
+- macOS/hardware-specific behavior differences
+- Apple support/documentation for FileVault, SecureToken, volume ownership, and smart cards on Apple Silicon
 
 ## Preconditions before any future enable attempt
 
