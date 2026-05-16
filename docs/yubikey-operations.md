@@ -4,7 +4,7 @@ This document covers day-2 operations for the workstation YubiKey setup.
 
 Safety boundaries:
 
-- Do not enforce smart-card-only login unless separately approved and tested.
+- Do not enable smart-card-only login unless separately approved and tested with primary key, backup key, and recovery access.
 - Do not depend on YubiKey-only FileVault pre-boot unlock.
 - Keep macOS password fallback and FileVault recovery access available unless a separate policy changes that.
 - Keep at least one tested backup administrator or recovery path before changing sudo/login authentication.
@@ -146,4 +146,4 @@ Before enabling sudo MFA on a host, confirm:
 - password/recovery/admin fallback tested
 - recovery steps documented for the operator
 
-Smart-card-only login and FileVault smart-card unlock require separate design, approval, and hands-on validation.
+Smart-card-only login is available only as a disabled opt-in. Before enabling it, read `docs/yubikey-smartcard-only.md`, validate both PIV pairings, and keep recovery/admin access available. FileVault smart-card unlock still requires separate design, approval, and hands-on validation.

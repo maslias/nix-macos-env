@@ -19,6 +19,7 @@ scripts=(
   yubikey-piv-login-setup.sh
   yubikey-piv-login-status.sh
   yubikey-policy-check.sh
+  yubikey-smartcard-policy-status.sh
 )
 
 for name in "${scripts[@]}"; do

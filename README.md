@@ -41,6 +41,7 @@ scripts/yubikey-sudo-register.sh  # pam_u2f sudo MFA registration helper
 scripts/yubikey-sudo-test.sh      # guided sudo MFA validation helper
 scripts/yubikey-piv-login-setup.sh # PIV smart-card login preparation helper
 scripts/yubikey-piv-login-status.sh # PIV smart-card login status helper
+scripts/yubikey-smartcard-policy-status.sh # smart-card-only policy status helper
 ```
 
 ## What is configured now
@@ -283,9 +284,11 @@ scripts/raycast-import-settings.sh path/to/default.rayconfig
 - provide `yubikey-piv-login-setup` to create a self-signed RSA PIV certificate and optionally pair it for macOS smart-card login
 - provide `yubikey-piv-login-status` to report smart-card identities, pairings, and FileVault smart-card status
 - provide `yubikey-policy-check` to report local operational-policy compliance without changing auth settings
-- do not enforce smart-card-only login or FileVault YubiKey unlock in the current phase
+- provide `yubikey-smartcard-policy-status` to report smart-card-only login policy state without changing auth settings
+- include a disabled opt-in for smart-card-only login with pairing-count guard; not enabled by default
+- do not implement FileVault YubiKey unlock in the current phase
 
-See [`docs/yubikey.md`](docs/yubikey.md), [`docs/yubikey-sudo-mfa.md`](docs/yubikey-sudo-mfa.md), [`docs/yubikey-piv-login.md`](docs/yubikey-piv-login.md), [`docs/yubikey-operations.md`](docs/yubikey-operations.md), and [`docs/yubikey-plan.md`](docs/yubikey-plan.md).
+See [`docs/yubikey.md`](docs/yubikey.md), [`docs/yubikey-sudo-mfa.md`](docs/yubikey-sudo-mfa.md), [`docs/yubikey-piv-login.md`](docs/yubikey-piv-login.md), [`docs/yubikey-smartcard-only.md`](docs/yubikey-smartcard-only.md), [`docs/yubikey-operations.md`](docs/yubikey-operations.md), and [`docs/yubikey-plan.md`](docs/yubikey-plan.md).
 
 ### Privacy / security
 

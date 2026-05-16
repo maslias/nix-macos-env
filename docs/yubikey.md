@@ -16,11 +16,12 @@ Phase 1 and the safe part of Phase 2 are implemented:
 - `yubikey-piv-login-setup` prepares a self-signed PIV certificate for optional macOS smart-card login pairing.
 - `yubikey-piv-login-status` reports macOS smart-card identities, pairings, and FileVault smart-card status.
 - `yubikey-policy-check` reports local operational-policy compliance without changing authentication settings.
+- `yubikey-smartcard-policy-status` reports smart-card-only login policy state without changing authentication settings.
 - `scripts/setup.sh` runs `yubikey-enroll` by default.
 - `scripts/setup.sh` reports `yubikey-status` after enrollment.
 - Use `scripts/setup.sh --skip-yubikey` for test runs or machines that must not enroll/check a key.
 
-The reusable YubiKey module defaults to **no authentication enforcement**. The `gdca-maintaince` host explicitly opts in to sudo MFA after validating both enrolled keys. This repo still does **not** enforce smart-card-only login or FileVault YubiKey unlock.
+The reusable YubiKey module defaults to **no authentication enforcement**. The `gdca-maintaince` host explicitly opts in to sudo MFA after validating both enrolled keys. Smart-card-only login exists only as a disabled opt-in option. This repo still does **not** enforce smart-card-only login by default or implement FileVault YubiKey unlock.
 
 ## FileVault limitation
 
@@ -48,6 +49,7 @@ The nix-darwin module `modules/darwin/yubikey.nix` installs:
 - `yubikey-piv-login-setup`
 - `yubikey-piv-login-status`
 - `yubikey-policy-check`
+- `yubikey-smartcard-policy-status`
 
 ## Setup behavior
 
@@ -184,6 +186,14 @@ yubikey-policy-check --require-piv-pairings 2
 ```
 
 See [`yubikey-operations.md`](yubikey-operations.md).
+
+Report smart-card-only login policy state:
+
+```sh
+yubikey-smartcard-policy-status --require-pairings 2
+```
+
+Smart-card-only login is a disabled opt-in that removes password-only login/unlock fallback for affected accounts. See [`yubikey-smartcard-only.md`](yubikey-smartcard-only.md) before enabling.
 
 Run the check directly:
 
