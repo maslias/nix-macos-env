@@ -44,6 +44,13 @@
           # globally for new machines until their own keys and recovery path are
           # validated.
           gdca.yubikey.sudoMfa.enable = true;
+
+          # Host-specific smart-card-only login enforcement. This removes normal
+          # password-only login/unlock fallback after activation; FileVault still
+          # remains password/recovery-key based. The YubiKey module refuses to
+          # apply this unless the console user has at least two sc_auth pairings.
+          gdca.yubikey.smartCardOnly.enable = true;
+          gdca.yubikey.smartCardOnly.minimumPairings = 2;
         }
       ];
     };

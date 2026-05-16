@@ -2,7 +2,7 @@
 
 This repo includes a disabled opt-in for macOS smart-card-only login.
 
-Default state: **disabled**.
+Default module state: **disabled**. The `gdca-maintaince` host is configured to enable this policy because primary and backup YubiKey PIV unlock were validated.
 
 ## What it changes
 
@@ -23,7 +23,7 @@ Smart-card-only enforcement changes that login posture to:
 
 ## Nix option
 
-The option exists but should remain disabled until tested with a recovery path:
+The option should remain disabled until tested with a recovery path. On validated hosts it can be enabled explicitly:
 
 ```nix
 gdca.yubikey.smartCardOnly.enable = true;
@@ -61,7 +61,13 @@ Before enabling smart-card-only login on any host:
 
 ## Recovery / rollback
 
-If smart-card-only login causes problems, boot or authenticate using a known recovery/admin path and remove the policy:
+If smart-card-only login causes problems, use an already-open administrator shell or boot/authenticate using a known recovery/admin path and remove the policy:
+
+```sh
+yubikey-smartcard-policy-disable
+```
+
+Equivalent manual command:
 
 ```sh
 sudo defaults delete /Library/Preferences/com.apple.security.smartcard enforceSmartCard

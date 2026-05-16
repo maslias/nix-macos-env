@@ -21,7 +21,7 @@ Phase 1 and the safe part of Phase 2 are implemented:
 - `scripts/setup.sh` reports `yubikey-status` after enrollment.
 - Use `scripts/setup.sh --skip-yubikey` for test runs or machines that must not enroll/check a key.
 
-The reusable YubiKey module defaults to **no authentication enforcement**. The `gdca-maintaince` host explicitly opts in to sudo MFA after validating both enrolled keys. Smart-card-only login exists only as a disabled opt-in option. This repo still does **not** enforce smart-card-only login by default or implement FileVault YubiKey unlock.
+The reusable YubiKey module defaults to **no authentication enforcement**. The `gdca-maintaince` host explicitly opts in to sudo MFA and smart-card-only login after validating both enrolled keys. This repo still does **not** implement FileVault YubiKey unlock.
 
 ## FileVault limitation
 
@@ -193,7 +193,7 @@ Report smart-card-only login policy state:
 yubikey-smartcard-policy-status --require-pairings 2
 ```
 
-Smart-card-only login is a disabled opt-in that removes password-only login/unlock fallback for affected accounts. See [`yubikey-smartcard-only.md`](yubikey-smartcard-only.md) before enabling.
+Smart-card-only login removes password-only login/unlock fallback for affected accounts when enabled on a validated host. See [`yubikey-smartcard-only.md`](yubikey-smartcard-only.md) before applying.
 
 Run the check directly:
 

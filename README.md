@@ -285,7 +285,7 @@ scripts/raycast-import-settings.sh path/to/default.rayconfig
 - provide `yubikey-piv-login-status` to report smart-card identities, pairings, and FileVault smart-card status
 - provide `yubikey-policy-check` to report local operational-policy compliance without changing auth settings
 - provide `yubikey-smartcard-policy-status` to report smart-card-only login policy state without changing auth settings
-- include a disabled opt-in for smart-card-only login with pairing-count guard; not enabled by default
+- include host-specific smart-card-only login enforcement with a pairing-count guard for validated hosts; not enabled by module default
 - do not implement FileVault YubiKey unlock in the current phase
 
 See [`docs/yubikey.md`](docs/yubikey.md), [`docs/yubikey-sudo-mfa.md`](docs/yubikey-sudo-mfa.md), [`docs/yubikey-piv-login.md`](docs/yubikey-piv-login.md), [`docs/yubikey-smartcard-only.md`](docs/yubikey-smartcard-only.md), [`docs/yubikey-operations.md`](docs/yubikey-operations.md), and [`docs/yubikey-plan.md`](docs/yubikey-plan.md).

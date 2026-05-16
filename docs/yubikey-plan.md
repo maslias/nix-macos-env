@@ -41,7 +41,7 @@ This phase must not change login, FileVault, or PAM enforcement.
 
 ## Phase 4b: optional smart-card-only macOS login
 
-- Add disabled opt-in configuration for macOS smart-card-only login. **Done via `gdca.yubikey.smartCardOnly.enable`; not enabled by default or for this host.**
+- Add opt-in configuration for macOS smart-card-only login. **Done via `gdca.yubikey.smartCardOnly.enable`; module default remains disabled, `gdca-maintaince` opts in after validation.**
 - Add a guard that refuses to apply when fewer than two local smart-card pairings exist. **Done via `gdca.yubikey.smartCardOnly.minimumPairings`.**
 - Add read-only policy status reporting. **Done via `yubikey-smartcard-policy-status`.**
 - Document rollback and recovery requirements. **Done in `docs/yubikey-smartcard-only.md`.**
