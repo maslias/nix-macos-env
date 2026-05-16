@@ -18,6 +18,7 @@ Phase 1 and the safe part of Phase 2 are implemented:
 - `yubikey-policy-check` reports local operational-policy compliance without changing authentication settings.
 - `yubikey-smartcard-policy-status` reports smart-card-only login policy state without changing authentication settings.
 - `yubikey-filevault-status` performs read-only FileVault smart-card unlock discovery.
+- `yubikey-workstation-setup` guides operators through primary/backup YubiKey setup interactively.
 - `scripts/setup.sh` runs `yubikey-enroll` by default.
 - `scripts/setup.sh` reports `yubikey-status` after enrollment.
 - Use `scripts/setup.sh --skip-yubikey` for test runs or machines that must not enroll/check a key.
@@ -52,6 +53,7 @@ The nix-darwin module `modules/darwin/yubikey.nix` installs:
 - `yubikey-policy-check`
 - `yubikey-smartcard-policy-status`
 - `yubikey-filevault-status`
+- `yubikey-workstation-setup`
 
 ## Setup behavior
 
@@ -66,6 +68,14 @@ Skip the YubiKey step explicitly:
 ```sh
 ./scripts/setup.sh --skip-yubikey
 ```
+
+For a guided full primary/backup workstation flow, run:
+
+```sh
+yubikey-workstation-setup
+```
+
+This wizard pauses before each step and can guide enrollment, hardening, sudo registration, PIV pairing, and read-only validation. It does not enable FileVault smart-card unlock.
 
 Run enrollment directly:
 

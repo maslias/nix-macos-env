@@ -100,6 +100,11 @@ in
         name = "yubikey-filevault-status";
         text = builtins.readFile ../../scripts/yubikey-filevault-status.sh;
       })
+
+      (writeShellApplication {
+        name = "yubikey-workstation-setup";
+        text = builtins.readFile ../../scripts/yubikey-workstation-setup.sh;
+      })
     ];
 
     # Disabled by default. When enabled, sudo requires a registered YubiKey via

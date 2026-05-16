@@ -43,6 +43,7 @@ scripts/yubikey-piv-login-setup.sh # PIV smart-card login preparation helper
 scripts/yubikey-piv-login-status.sh # PIV smart-card login status helper
 scripts/yubikey-smartcard-policy-status.sh # smart-card-only policy status helper
 scripts/yubikey-filevault-status.sh # FileVault smart-card discovery helper
+scripts/yubikey-workstation-setup.sh # guided primary/backup workstation setup wizard
 ```
 
 ## What is configured now
@@ -289,6 +290,7 @@ scripts/raycast-import-settings.sh path/to/default.rayconfig
 - provide `yubikey-smartcard-policy-status` to report smart-card-only login policy state without changing auth settings
 - include host-specific smart-card-only login enforcement with a pairing-count guard for validated hosts; not enabled by module default
 - provide `yubikey-filevault-status` for read-only FileVault smart-card unlock discovery
+- provide `yubikey-workstation-setup` as an interactive guided primary/backup setup wizard
 - do not implement FileVault YubiKey unlock enablement; local `sc_auth filevault` is blocked by a SecureToken status mismatch on this Mac
 
 See [`docs/yubikey.md`](docs/yubikey.md), [`docs/yubikey-sudo-mfa.md`](docs/yubikey-sudo-mfa.md), [`docs/yubikey-piv-login.md`](docs/yubikey-piv-login.md), [`docs/yubikey-smartcard-only.md`](docs/yubikey-smartcard-only.md), [`docs/yubikey-filevault.md`](docs/yubikey-filevault.md), [`docs/yubikey-operations.md`](docs/yubikey-operations.md), and [`docs/yubikey-plan.md`](docs/yubikey-plan.md).

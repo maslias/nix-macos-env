@@ -22,6 +22,7 @@ scripts=(
   yubikey-smartcard-policy-status.sh
   yubikey-smartcard-policy-disable.sh
   yubikey-filevault-status.sh
+  yubikey-workstation-setup.sh
 )
 
 for name in "${scripts[@]}"; do

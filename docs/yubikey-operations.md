@@ -44,6 +44,16 @@ The policy check reports local state only. It does not change YubiKeys, PAM, mac
 
 ## New machine procedure
 
+Recommended guided flow after the Nix config installs the helper tools:
+
+```sh
+yubikey-workstation-setup
+```
+
+The wizard pauses before each step, asks the operator to insert primary/backup keys, and delegates to the focused helpers below. Manual validation is still required after it finishes.
+
+Manual step-by-step flow:
+
 1. Apply the Nix config with YubiKey tooling installed.
 2. Enroll the primary key:
 
