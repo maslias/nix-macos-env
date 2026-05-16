@@ -31,6 +31,52 @@ exit 99
 EOF_FDESETUP
 chmod +x "$fakebin/fdesetup"
 
+cat >"$fakebin/sysadminctl" <<'EOF_SYSADMINCTL'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "$#" -eq 2 && "$1" == "-secureTokenStatus" ]]; then
+  printf 'Secure token is ENABLED for user %s\n' "$2"
+  exit 0
+fi
+printf 'unexpected sysadminctl invocation:' >&2
+printf ' %q' "$@" >&2
+printf '\n' >&2
+exit 99
+EOF_SYSADMINCTL
+chmod +x "$fakebin/sysadminctl"
+
+cat >"$fakebin/dscl" <<'EOF_DSCL'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "$*" == *"GeneratedUID"* ]]; then
+  printf 'GeneratedUID: FAKE-GENERATED-UID\n'
+  exit 0
+fi
+if [[ "$*" == *"AuthenticationAuthority"* ]]; then
+  printf 'AuthenticationAuthority: ;SecureToken; ;tokenidentity;HASH_FOR_PRIMARY ;tokenidentity;HASH_FOR_BACKUP\n'
+  exit 0
+fi
+printf 'unexpected dscl invocation:' >&2
+printf ' %q' "$@" >&2
+printf '\n' >&2
+exit 99
+EOF_DSCL
+chmod +x "$fakebin/dscl"
+
+cat >"$fakebin/diskutil" <<'EOF_DISKUTIL'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "$#" -eq 3 && "$1" == "apfs" && "$2" == "listUsers" ]]; then
+  printf 'Cryptographic users for diskFAKE (1 found)\n+-- FAKE-GENERATED-UID\n    Type: Local Open Directory User\n    Volume Owner: Yes\n'
+  exit 0
+fi
+printf 'unexpected diskutil invocation:' >&2
+printf ' %q' "$@" >&2
+printf '\n' >&2
+exit 99
+EOF_DISKUTIL
+chmod +x "$fakebin/diskutil"
+
 cat >"$fakesbin/sc_auth" <<'EOF_SC_AUTH'
 #!/usr/bin/env bash
 set -euo pipefail

@@ -29,6 +29,9 @@ yubikey-filevault-status --hash HASH
 This helper runs read-only checks only:
 
 - `fdesetup status`
+- `sysadminctl -secureTokenStatus USER`
+- `dscl` reads for GeneratedUID and smart-card token identities
+- `diskutil apfs listUsers /`
 - `sc_auth list -u USER`
 - `sc_auth identities`
 - `sc_auth filevault -o status -u USER [-h HASH]`
@@ -37,13 +40,13 @@ It does not enable, disable, or modify FileVault, smart-card pairings, PAM, logi
 
 ## Observed discovery note
 
-On this machine, initial read-only status returned:
+On this machine, initial read-only `sc_auth filevault` status returned:
 
 ```text
 SecureToken for user mliebreich is needed and is not present
 ```
 
-Do not proceed to enablement until this state is understood. It may indicate that the user is not currently a FileVault/SecureToken-authorized unlock user in the way `sc_auth filevault` expects, even if normal macOS login and smart-card login work.
+Other read-only checks show the user has SecureToken and appears as an APFS cryptographic user/volume owner. Do not proceed to enablement until this mismatch is understood. It may indicate that `sc_auth filevault` expects additional FileVault authorization state, has limited support on this macOS/hardware combination, or behaves differently when smart-card-only login is already enforced.
 
 ## Preconditions before any future enable attempt
 
@@ -55,7 +58,8 @@ Before running any FileVault smart-card enable command:
 4. Confirm at least one alternate admin/recovery path exists.
 5. Confirm primary and backup YubiKeys both work for macOS smart-card login.
 6. Confirm `yubikey-filevault-status` output is understood.
-7. Confirm the exact `sc_auth filevault -o enable ...` command to run and rollback path.
+7. Confirm `sudo fdesetup list` shows the intended user as FileVault-authorized.
+8. Confirm the exact `sc_auth filevault -o enable ...` command to run and rollback path.
 
 ## Explicit non-goals for now
 

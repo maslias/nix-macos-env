@@ -69,6 +69,25 @@ else
   printf '\nFileVault status:\n  fdesetup unavailable\n'
 fi
 
+if command -v sysadminctl >/dev/null 2>&1; then
+  run_or_report "SecureToken status for $username" sysadminctl -secureTokenStatus "$username"
+else
+  printf '\nSecureToken status:\n  sysadminctl unavailable\n'
+fi
+
+if command -v dscl >/dev/null 2>&1; then
+  run_or_report "GeneratedUID for $username" dscl . -read "/Users/$username" GeneratedUID
+  run_or_report "Smart-card token identities in AuthenticationAuthority for $username" sh -c "dscl . -read '/Users/$username' AuthenticationAuthority | grep tokenidentity || true"
+else
+  printf '\nDirectory Service status:\n  dscl unavailable\n'
+fi
+
+if command -v diskutil >/dev/null 2>&1; then
+  run_or_report "APFS cryptographic users for startup volume" diskutil apfs listUsers /
+else
+  printf '\nAPFS cryptographic users:\n  diskutil unavailable\n'
+fi
+
 if [[ -x "$sc_auth_bin" ]]; then
   run_or_report "sc_auth pairings for $username" "$sc_auth_bin" list -u "$username"
   run_or_report "sc_auth visible smart-card identities" "$sc_auth_bin" identities
