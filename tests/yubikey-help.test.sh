@@ -23,6 +23,7 @@ scripts=(
   yubikey-smartcard-policy-disable.sh
   yubikey-filevault-status.sh
   yubikey-workstation-setup.sh
+  yubikey-workstation-rotate.sh
 )
 
 for name in "${scripts[@]}"; do

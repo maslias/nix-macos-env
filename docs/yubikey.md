@@ -19,6 +19,7 @@ Phase 1 and the safe part of Phase 2 are implemented:
 - `yubikey-smartcard-policy-status` reports smart-card-only login policy state without changing authentication settings.
 - `yubikey-filevault-status` performs read-only FileVault smart-card unlock discovery.
 - `yubikey-workstation-setup` guides operators through primary/backup YubiKey setup interactively.
+- `yubikey-workstation-rotate` guides existing-key PIN, sudo MFA, and optional PIV identity rotation.
 - `scripts/setup.sh` runs `yubikey-enroll` by default.
 - `scripts/setup.sh` reports `yubikey-status` after enrollment.
 - Use `scripts/setup.sh --skip-yubikey` for test runs or machines that must not enroll/check a key.
@@ -54,6 +55,7 @@ The nix-darwin module `modules/darwin/yubikey.nix` installs:
 - `yubikey-smartcard-policy-status`
 - `yubikey-filevault-status`
 - `yubikey-workstation-setup`
+- `yubikey-workstation-rotate`
 
 ## Setup behavior
 
@@ -76,6 +78,14 @@ yubikey-workstation-setup
 ```
 
 This wizard pauses before each step and can guide enrollment, hardening, sudo registration, PIV pairing, and read-only validation. It does not enable FileVault smart-card unlock.
+
+For existing-key maintenance/rotation, run:
+
+```sh
+yubikey-workstation-rotate
+```
+
+Safe default rotation covers PIV PIN/PUK/management-key prompts, sudo MFA re-registration, pairing/status checks, and final read-only checks. PIV slot key/certificate replacement is destructive and requires `--replace-piv-identity`.
 
 Run enrollment directly:
 

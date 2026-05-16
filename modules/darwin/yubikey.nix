@@ -105,6 +105,11 @@ in
         name = "yubikey-workstation-setup";
         text = builtins.readFile ../../scripts/yubikey-workstation-setup.sh;
       })
+
+      (writeShellApplication {
+        name = "yubikey-workstation-rotate";
+        text = builtins.readFile ../../scripts/yubikey-workstation-rotate.sh;
+      })
     ];
 
     # Disabled by default. When enabled, sudo requires a registered YubiKey via

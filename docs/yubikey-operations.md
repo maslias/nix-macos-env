@@ -123,16 +123,32 @@ Do not remove the only working key or only working admin path before the replace
 
 ## Key rotation procedure
 
-Use this for planned replacement or certificate refresh:
+For existing-key maintenance, use the guided wizard:
+
+```sh
+yubikey-workstation-rotate
+```
+
+Safe default rotation can guide PIV PIN/PUK/management-key changes, sudo MFA re-registration, pairing/status checks, and final policy reports. It does not replace PIV slot 9a key/certificate material unless explicitly requested.
+
+For planned key replacement or certificate refresh:
 
 1. Confirm the old primary and old backup both still work.
-2. Prepare the new key with `yubikey-enroll --role backup` or `--role primary` as appropriate.
-3. Run `yubikey-harden` on the new key.
-4. Run `yubikey-sudo-register` for the new key.
+2. Prepare the new key with `yubikey-enroll --role backup` or `--role primary` as appropriate, or use `yubikey-workstation-setup`.
+3. Run `yubikey-harden` or `yubikey-workstation-rotate` on the new key.
+4. Run `yubikey-sudo-register` for the new key, or use the rotation wizard's sudo step.
 5. Run `yubikey-piv-login-setup --pair` if PIV unlock is used.
 6. Test sudo and screen unlock with the new key.
 7. Only after successful testing, remove old pam_u2f credentials and old PIV pairings.
 8. Update asset inventory and the local enrollment inventory as needed.
+
+Destructive PIV identity replacement:
+
+```sh
+yubikey-workstation-rotate --replace-piv-identity
+```
+
+This uses `yubikey-piv-login-setup --force --pair` and can overwrite PIV slot 9a. Do this only with an open admin shell and verified recovery path, because smart-card-only login depends on successful re-pairing.
 
 ## FileVault recovery-key escrow
 
