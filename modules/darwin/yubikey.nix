@@ -99,7 +99,7 @@ in
     # smart card for login/unlock and removes ordinary password-only fallback for
     # affected accounts. The activation guard refuses to apply unless enough
     # local smart-card pairings already exist for the console user.
-    system.activationScripts.postActivation.text = lib.mkIf cfg.smartCardOnly.enable (lib.mkAfter ''
+    system.activationScripts.defaults.text = lib.mkIf cfg.smartCardOnly.enable (lib.mkAfter ''
       console_user="$(/usr/bin/stat -f %Su /dev/console 2>/dev/null || true)"
       if [ -z "$console_user" ] || [ "$console_user" = "root" ] || [ "$console_user" = "loginwindow" ]; then
         echo "error: cannot determine a logged-in console user for smart-card-only enforcement" >&2
