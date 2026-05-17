@@ -43,12 +43,11 @@ run_or_report() {
   shift
 
   printf '\n%s:\n' "$label"
-  if "$@"; then
-    return 0
+  local status=0
+  "$@" || status=$?
+  if [[ "$status" -ne 0 ]]; then
+    printf '  command exited with status %d\n' "$status"
   fi
-
-  local status=$?
-  printf '  command exited with status %d\n' "$status"
   return 0
 }
 
@@ -82,10 +81,25 @@ else
   printf '\nDirectory Service status:\n  dscl unavailable\n'
 fi
 
+data_volume_uuid=""
 if command -v diskutil >/dev/null 2>&1; then
   run_or_report "APFS cryptographic users for startup volume" diskutil apfs listUsers /
+  data_volume_uuid="$(diskutil info /System/Volumes/Data 2>/dev/null | awk -F': *' '/Volume UUID/{ print $2; exit }' || true)"
+  if [[ -n "$data_volume_uuid" ]]; then
+    printf '\nAPFS Data volume UUID:\n  %s\n' "$data_volume_uuid"
+  fi
 else
   printf '\nAPFS cryptographic users:\n  diskutil unavailable\n'
+fi
+
+if command -v security >/dev/null 2>&1; then
+  if [[ -n "$data_volume_uuid" ]]; then
+    run_or_report "FileVault smart-card enforcement recovery override status" security filevault skip-sc-enforcement "$data_volume_uuid" status
+  else
+    printf '\nFileVault smart-card enforcement recovery override status:\n  skipped: APFS Data volume UUID unavailable\n'
+  fi
+else
+  printf '\nFileVault smart-card enforcement recovery override status:\n  security unavailable\n'
 fi
 
 if [[ -x "$sc_auth_bin" ]]; then

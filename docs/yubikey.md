@@ -18,6 +18,7 @@ Phase 1 and the safe part of Phase 2 are implemented:
 - `yubikey-policy-check` reports local operational-policy compliance without changing authentication settings.
 - `yubikey-smartcard-policy-status` reports smart-card-only login policy state without changing authentication settings.
 - `yubikey-filevault-status` performs read-only FileVault smart-card unlock discovery.
+- `yubikey-filevault-enable` performs guarded FileVault smart-card unlock preflight and optional explicit enablement.
 - `yubikey-workstation-setup` guides operators through primary/backup YubiKey setup interactively.
 - `yubikey-workstation-rotate` guides existing-key PIN, sudo MFA, and optional PIV identity rotation.
 - `scripts/setup.sh` runs `yubikey-enroll` by default.
@@ -54,6 +55,7 @@ The nix-darwin module `modules/darwin/yubikey.nix` installs:
 - `yubikey-policy-check`
 - `yubikey-smartcard-policy-status`
 - `yubikey-filevault-status`
+- `yubikey-filevault-enable`
 - `yubikey-workstation-setup`
 - `yubikey-workstation-rotate`
 
@@ -77,7 +79,7 @@ For a guided full primary/backup workstation flow, run:
 yubikey-workstation-setup
 ```
 
-This wizard pauses before each step and can guide enrollment, hardening, sudo registration, PIV pairing, and read-only validation. It does not enable FileVault smart-card unlock.
+This wizard pauses before each step and can guide enrollment, hardening, sudo registration, PIV pairing, read-only validation, and an optional FileVault smart-card unlock preflight/enable flow. FileVault enablement remains explicit and requires typed confirmations.
 
 For existing-key maintenance/rotation, run:
 
@@ -196,6 +198,26 @@ yubikey-piv-login-status
 ```
 
 See [`yubikey-piv-login.md`](yubikey-piv-login.md).
+
+Run FileVault smart-card unlock preflight without changes:
+
+```sh
+yubikey-filevault-enable --dry-run
+```
+
+Run recovery/admin verification before enablement:
+
+```sh
+yubikey-filevault-enable --verify-recovery --hash HASH
+```
+
+After recovery verification records a recent checkpoint, enable for the inserted paired YubiKey with explicit confirmations:
+
+```sh
+yubikey-filevault-enable --execute --hash HASH
+```
+
+This is intentionally interactive and is not run automatically by Nix activation. See [`yubikey-filevault.md`](yubikey-filevault.md).
 
 Report local operational-policy compliance:
 

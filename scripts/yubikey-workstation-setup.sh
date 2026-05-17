@@ -5,6 +5,7 @@ skip_harden=false
 skip_sudo=false
 skip_piv=false
 skip_policy=false
+skip_filevault=false
 primary_serial=""
 backup_serial=""
 
@@ -22,9 +23,10 @@ What it can guide:
   - register each key for sudo MFA
   - create/pair PIV smart-card login identities
   - run final status/policy checks
+  - optionally run FileVault smart-card unlock preflight/recovery verification/enablement
 
 Safety boundaries:
-  - does not enable FileVault smart-card unlock
+  - does not enable FileVault smart-card unlock unless explicitly selected and confirmed
   - does not enforce new policy by itself beyond the current Nix config
   - does not use --force for PIV slots
 
@@ -35,6 +37,7 @@ Options:
   --skip-sudo              Skip yubikey-sudo-register steps
   --skip-piv               Skip yubikey-piv-login-setup --pair steps
   --skip-policy            Skip final policy/status checks
+  --skip-filevault         Skip optional FileVault smart-card unlock preflight/enable step
   -h, --help               Show this help
 EOF
 }
@@ -55,6 +58,7 @@ while [[ $# -gt 0 ]]; do
     --skip-sudo) skip_sudo=true ;;
     --skip-piv) skip_piv=true ;;
     --skip-policy) skip_policy=true ;;
+    --skip-filevault) skip_filevault=true ;;
     -h|--help) usage; exit 0 ;;
     *) usage >&2; exit 2 ;;
   esac
@@ -124,6 +128,7 @@ done
 [[ "$skip_harden" == true ]] || need_tool yubikey-harden
 [[ "$skip_sudo" == true ]] || need_tool yubikey-sudo-register
 [[ "$skip_piv" == true ]] || need_tool yubikey-piv-login-setup
+[[ "$skip_filevault" == true ]] || need_tool yubikey-filevault-enable
 
 cat <<'EOF'
 YubiKey workstation guided setup
@@ -170,6 +175,27 @@ EOF
   fi
   if command -v yubikey-filevault-status >/dev/null 2>&1; then
     yubikey-filevault-status || true
+  fi
+fi
+
+if [[ "$skip_filevault" != true ]]; then
+  cat <<'EOF'
+
+Optional FileVault smart-card/YubiKey unlock
+
+This affects pre-boot authentication and is intentionally separate from normal
+macOS smart-card login. The recommended first run is preflight only.
+EOF
+  if confirm "Run FileVault YubiKey unlock preflight now?"; then
+    yubikey-filevault-enable --dry-run || true
+  fi
+  if confirm "Run recovery/admin verification checkpoint now?"; then
+    yubikey-filevault-enable --verify-recovery || true
+  fi
+  if confirm "Enable FileVault YubiKey unlock now? Only say yes if recovery verification passed"; then
+    yubikey-filevault-enable --execute
+  else
+    echo "Skipped: FileVault YubiKey unlock enablement"
   fi
 fi
 

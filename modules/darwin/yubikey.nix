@@ -102,6 +102,11 @@ in
       })
 
       (writeShellApplication {
+        name = "yubikey-filevault-enable";
+        text = builtins.readFile ../../scripts/yubikey-filevault-enable.sh;
+      })
+
+      (writeShellApplication {
         name = "yubikey-workstation-setup";
         text = builtins.readFile ../../scripts/yubikey-workstation-setup.sh;
       })

@@ -20,8 +20,8 @@ Technical project overview is in [`PROJECT.md`](PROJECT.md).
 - sudo YubiKey factor is touch-only: `gdca.yubikey.sudoMfa.pinVerification = false`.
 - macOS smart-card-only login is enabled for this host.
 - Password-only macOS login/unlock fallback is removed.
-- FileVault remains password/recovery-key based.
-- FileVault YubiKey unlock is not enabled and is currently blocked for the local `sc_auth filevault` path.
+- FileVault remains password/recovery-key based unless the guarded FileVault smart-card enable wizard is explicitly completed.
+- FileVault YubiKey unlock is not enabled automatically by Nix activation; use `yubikey-filevault-enable --dry-run`, then `--verify-recovery`, before `--execute`.
 
 ## Main entry points
 
@@ -31,13 +31,14 @@ Technical project overview is in [`PROJECT.md`](PROJECT.md).
 - `yubikey-policy-check --require-piv-pairings 2` — YubiKey policy report
 - `yubikey-smartcard-policy-status --require-pairings 2` — smart-card-only login status
 - `yubikey-filevault-status` — read-only FileVault smart-card discovery
+- `yubikey-filevault-enable` — guarded FileVault smart-card unlock preflight and optional explicit enablement
 - `power-status` — read-only AC/battery sleep policy report
 
 ## Important safety constraints
 
 Do not change these without explicit user validation:
 
-- FileVault YubiKey unlock
+- unattended/declarative FileVault YubiKey unlock
 - smart-card-only login policy on unvalidated hosts
 - PIV slot `9a` replacement / `--force`
 - recovery/admin fallback assumptions

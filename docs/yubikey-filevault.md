@@ -1,12 +1,12 @@
 # YubiKey FileVault unlock discovery
 
-This repo does **not** currently enable FileVault smart-card/YubiKey unlock.
+This repo does **not** enable FileVault smart-card/YubiKey unlock automatically through Nix activation. It provides read-only status checks and a guarded, explicit enable wizard.
 
 Current production state on `gdca-maintaince`:
 
 - macOS login/unlock: smart-card-only with paired YubiKeys
 - sudo: YubiKey touch-only MFA plus normal auth stack
-- FileVault pre-boot unlock: password/recovery-key based
+- FileVault pre-boot unlock: password/recovery-key based unless the guarded enable wizard is explicitly completed
 
 ## Why this is separate
 
@@ -32,19 +32,87 @@ This helper runs read-only checks only:
 - `sysadminctl -secureTokenStatus USER`
 - `dscl` reads for GeneratedUID and smart-card token identities
 - `diskutil apfs listUsers /`
+- `diskutil info /System/Volumes/Data` for the APFS Data volume UUID
+- `security filevault skip-sc-enforcement DATA_VOLUME_UUID status` when available; outside RecoveryOS this is expected to report that the command is Recovery-only
 - `sc_auth list -u USER`
 - `sc_auth identities`
 - `sc_auth filevault -o status -u USER [-h HASH]`
 
 It does not enable, disable, or modify FileVault, smart-card pairings, PAM, login policy, or YubiKeys.
 
-## Observed discovery and blocker
+## Guarded enable wizard
 
-On this machine, `sc_auth filevault` status returns the same error with and without `sudo`, for both paired YubiKey public-key hashes:
+Run preflight only:
 
 ```sh
-sudo /usr/sbin/sc_auth filevault -o status -u "$USER" -h 299A66FA60D26D3EF35383B190362290A1C6A345
-sudo /usr/sbin/sc_auth filevault -o status -u "$USER" -h 81996693D9C672D509867641795BDA68D65F13D5
+yubikey-filevault-enable --dry-run
+```
+
+If multiple paired hashes exist, pass the inserted key's hash explicitly:
+
+```sh
+yubikey-filevault-enable --dry-run --hash HASH
+```
+
+Run recovery/admin verification and record a local checkpoint:
+
+```sh
+yubikey-filevault-enable --verify-recovery --hash HASH
+```
+
+This checks sudo, local admin membership, FileVault authorization, and whether FileVault reports a personal recovery key. It still requires typed confirmations for the two things software cannot prove: that the recovery key is stored outside this Mac and that RecoveryOS boot was tested. The checkpoint is written to:
+
+```text
+~/.config/nix-macos/filevault-smartcard-recovery.tsv
+```
+
+After recovery verification is complete, run explicit enablement within the checkpoint window, 24 hours by default:
+
+```sh
+yubikey-filevault-enable --execute --hash HASH
+```
+
+The wizard refuses to proceed unless required checks pass. It requires Apple silicon, FileVault on, SecureToken, APFS volume ownership, FileVault authorization, a paired and visible smart-card hash, a recent recovery verification checkpoint, and typed confirmations. The final enable command is run as the logged-in user, not with `sudo`:
+
+```sh
+/usr/sbin/sc_auth filevault -o enable -u "$USER" -h HASH
+```
+
+Rollback after a successful boot is expected to be:
+
+```sh
+sudo /usr/sbin/sc_auth filevault -o disable -u "$USER" -h HASH
+```
+
+Emergency one-login bypass from RecoveryOS, if smart-card enforcement blocks login:
+
+```sh
+security filevault skip-sc-enforcement DATA_VOLUME_UUID set
+```
+
+## Current 2026 re-check
+
+Apple's current deployment guide says FileVault smart-card unlock is supported on Apple silicon Macs with macOS 11 or later, including CCID/PIV-compatible smart cards. It also says T2 Macs do **not** support FileVault smart-card unlock; on T2, the supported pattern is password FileVault unlock followed by smart-card login, with `DisableFDEAutoLogin` set.
+
+This workstation is on macOS 26.4.1 and still reports normal FileVault/SecureToken/volume-owner state:
+
+- `fdesetup status`: FileVault is on
+- `sysadminctl -secureTokenStatus mliebreich`: Secure token is enabled
+- `diskutil apfs listUsers /`: the local user is a volume owner
+- `sc_auth list -u mliebreich`: both YubiKey public-key hashes are paired
+
+`sc_auth` remains a shell wrapper around CryptoTokenKit's `ctkbind` for FileVault operations:
+
+```sh
+/usr/sbin/sc_auth filevault -o status -u "$USER" -h HASH
+# calls ctkbind -o fvstatus -u "$USER" -h HASH
+```
+
+The read-only FileVault smart-card status still returns this message for both paired YubiKey hashes:
+
+```sh
+/usr/sbin/sc_auth filevault -o status -u "$USER" -h 299A66FA60D26D3EF35383B190362290A1C6A345
+/usr/sbin/sc_auth filevault -o status -u "$USER" -h 81996693D9C672D509867641795BDA68D65F13D5
 ```
 
 ```text
@@ -68,14 +136,16 @@ diskutil apfs listUsers /
 
 `dscl` also shows both smart-card token identities in `AuthenticationAuthority`.
 
-Conclusion for this Mac: FileVault smart-card/YubiKey unlock is **blocked** for the local `sc_auth filevault` + self-signed PIV path. Do not run `sc_auth filevault -o enable` unless Apple/MDM/platform-specific guidance explains and resolves this mismatch.
+Updated interpretation: this message is probably **not** the same SecureToken reported by `sysadminctl`. `ctkbind` appears to be reporting that the smart-card FileVault unlock token/wrapping state is not present yet. It may simply mean "FileVault smart-card unlock is not enabled for this user/hash" rather than "the macOS user lacks SecureToken."
+
+However, enabling still crosses a pre-boot authentication boundary. Keep Nix activation read-only; use only the explicit guided wizard for a supervised enable test with a verified recovery path.
 
 Possible future investigation paths:
 
-- Apple enterprise/MDM-supported smart-card FileVault workflow
-- internal CA-issued PIV certificates instead of self-signed certificates
-- macOS/hardware-specific behavior differences
-- Apple support/documentation for FileVault, SecureToken, volume ownership, and smart cards on Apple Silicon
+- controlled Apple-silicon enable test using `yubikey-filevault-enable --verify-recovery --hash HASH` followed by `yubikey-filevault-enable --execute --hash HASH`, which runs `/usr/sbin/sc_auth filevault -o enable -u "$USER" -h HASH` as the logged-in user, not with `sudo`
+- compare Apple's documentation statement that FileVault smart-card support can be managed using `security` with the local `security filevault` subcommands, which currently only expose RecoveryOS skip-enforcement operations
+- internal CA-issued PIV certificates instead of self-signed certificates if self-signed PIV certificates fail the enable test
+- Apple support/documentation for the exact meaning of `ctkbind`'s "SecureToken ... is not present" status text
 
 ## Preconditions before any future enable attempt
 
@@ -88,11 +158,13 @@ Before running any FileVault smart-card enable command:
 5. Confirm primary and backup YubiKeys both work for macOS smart-card login.
 6. Confirm `yubikey-filevault-status` output is understood.
 7. Confirm `sudo fdesetup list` shows the intended user as FileVault-authorized.
-8. Confirm the exact `sc_auth filevault -o enable ...` command to run and rollback path.
+8. Run `yubikey-filevault-enable --verify-recovery --hash HASH` and confirm it records a recent checkpoint.
+9. Confirm the exact `sc_auth filevault -o enable ...` command to run as the logged-in user, not through `sudo`.
+10. Confirm the rollback/disable command, likely `sudo /usr/sbin/sc_auth filevault -o disable -u USER -h HASH` after boot, plus the RecoveryOS `security filevault skip-sc-enforcement DATA_VOLUME_UUID set` emergency path if smart-card enforcement blocks login.
 
 ## Explicit non-goals for now
 
-- No declarative Nix enablement for FileVault smart-card unlock.
-- No automatic `sc_auth filevault -o enable` execution.
+- No declarative Nix activation enablement for FileVault smart-card unlock.
+- No unattended `sc_auth filevault -o enable` execution.
 - No changes to YubiKey PIV certificates for FileVault.
 - No assumption that FileVault can be unlocked without the password/recovery-key path.

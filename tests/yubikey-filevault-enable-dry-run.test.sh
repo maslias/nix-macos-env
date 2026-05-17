@@ -3,7 +3,7 @@ set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/.." && pwd)"
-script="$repo_root/scripts/yubikey-filevault-status.sh"
+script="$repo_root/scripts/yubikey-filevault-enable.sh"
 
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
@@ -17,17 +17,29 @@ fakebin="$tmpdir/bin"
 fakesbin="$tmpdir/sbin"
 mkdir -p "$fakebin" "$fakesbin"
 
+cat >"$fakebin/uname" <<'EOF_UNAME'
+#!/usr/bin/env bash
+printf 'arm64\n'
+EOF_UNAME
+chmod +x "$fakebin/uname"
+
 cat >"$fakebin/fdesetup" <<'EOF_FDESETUP'
 #!/usr/bin/env bash
 set -euo pipefail
-if [[ "$#" -eq 1 && "$1" == "status" ]]; then
-  printf 'FileVault is On.\n'
-  exit 0
-fi
-printf 'unexpected fdesetup invocation:' >&2
-printf ' %q' "$@" >&2
-printf '\n' >&2
-exit 99
+case "$1" in
+  status)
+    printf 'FileVault is On.\n'
+    ;;
+  list)
+    printf 'testuser,FAKE-GENERATED-UID\n'
+    ;;
+  *)
+    printf 'unexpected fdesetup invocation:' >&2
+    printf ' %q' "$@" >&2
+    printf '\n' >&2
+    exit 99
+    ;;
+esac
 EOF_FDESETUP
 chmod +x "$fakebin/fdesetup"
 
@@ -50,10 +62,6 @@ cat >"$fakebin/dscl" <<'EOF_DSCL'
 set -euo pipefail
 if [[ "$*" == *"GeneratedUID"* ]]; then
   printf 'GeneratedUID: FAKE-GENERATED-UID\n'
-  exit 0
-fi
-if [[ "$*" == *"AuthenticationAuthority"* ]]; then
-  printf 'AuthenticationAuthority: ;SecureToken; ;tokenidentity;HASH_FOR_PRIMARY ;tokenidentity;HASH_FOR_BACKUP\n'
   exit 0
 fi
 printf 'unexpected dscl invocation:' >&2
@@ -84,10 +92,6 @@ chmod +x "$fakebin/diskutil"
 cat >"$fakebin/security" <<'EOF_SECURITY'
 #!/usr/bin/env bash
 set -euo pipefail
-if [[ "$#" -eq 4 && "$1" == "filevault" && "$2" == "skip-sc-enforcement" && "$3" == "FAKE-DATA-VOLUME-UUID" && "$4" == "status" ]]; then
-  printf 'This command is available only when booted to Recovery\n'
-  exit 1
-fi
 printf 'unexpected security invocation:' >&2
 printf ' %q' "$@" >&2
 printf '\n' >&2
@@ -103,10 +107,17 @@ case "$1" in
     printf 'Hash: HASH_FOR_PRIMARY\nHash: HASH_FOR_BACKUP\n'
     ;;
   identities)
-    printf 'SmartCard identities visible\n'
+    printf 'SmartCard: com.apple.pivtoken:FAKE\nPaired identities which are used for authentication:\nHASH_FOR_PRIMARY\ttestuser - Certificate For PIV Authentication\n'
     ;;
   filevault)
-    printf 'SecureToken for user testuser is needed and is not present\n'
+    if [[ "$2" == "-o" && "$3" == "status" ]]; then
+      printf 'SecureToken for user testuser is needed and is not present\n'
+      exit 0
+    fi
+    printf 'unexpected sc_auth filevault invocation:' >&2
+    printf ' %q' "$@" >&2
+    printf '\n' >&2
+    exit 99
     ;;
   *)
     printf 'unexpected sc_auth invocation:' >&2
@@ -118,24 +129,16 @@ esac
 EOF_SC_AUTH
 chmod +x "$fakesbin/sc_auth"
 
-output="$(PATH="$fakebin:$PATH" YUBIKEY_SC_AUTH="$fakesbin/sc_auth" "$script" --username testuser --hash HASH_FOR_PRIMARY)"
+output="$(PATH="$fakebin:$PATH" YUBIKEY_SC_AUTH="$fakesbin/sc_auth" "$script" --username testuser --dry-run --hash HASH_FOR_PRIMARY)"
 printf '%s\n' "$output"
 
-if ! grep -Fq 'read-only discovery only' <<<"$output"; then
-  fail "expected safety boundary"
-fi
-if ! grep -Fq 'FileVault is On.' <<<"$output"; then
-  fail "expected FileVault status output"
-fi
-if ! grep -Fq 'Hash: HASH_FOR_PRIMARY' <<<"$output"; then
-  fail "expected sc_auth pairing output"
-fi
-if ! grep -Fq 'FAKE-DATA-VOLUME-UUID' <<<"$output"; then
-  fail "expected Data volume UUID output"
-fi
-if ! grep -Fq 'This command is available only when booted to Recovery' <<<"$output"; then
-  fail "expected security FileVault recovery override status output"
-fi
-if ! grep -Fq 'SecureToken for user testuser is needed and is not present' <<<"$output"; then
-  fail "expected sc_auth FileVault status output"
-fi
+for expected in \
+  'mode: dry-run' \
+  '[OK] Apple silicon architecture detected: arm64' \
+  '[OK] testuser is FileVault-authorized' \
+  '[OK] requested hash is visible on the inserted smart card' \
+  'Dry run complete. No changes were made.'; do
+  if ! grep -Fq "$expected" <<<"$output"; then
+    fail "expected output: $expected"
+  fi
+done
