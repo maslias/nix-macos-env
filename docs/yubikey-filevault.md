@@ -72,11 +72,22 @@ After recovery verification is complete, run explicit enablement within the chec
 yubikey-filevault-enable --execute --hash HASH
 ```
 
-The wizard refuses to proceed unless required checks pass. It requires Apple silicon, FileVault on, SecureToken, APFS volume ownership, FileVault authorization, a paired and visible smart-card hash, a recent recovery verification checkpoint, and typed confirmations. The final enable command is run as the logged-in user, not with `sudo`:
+The wizard refuses to proceed unless required checks pass. It requires Apple silicon, FileVault on, SecureToken, APFS volume ownership, FileVault authorization, a paired and visible smart-card hash, a PIV slot 9d key-management certificate on the inserted YubiKey, a recent recovery verification checkpoint, and typed confirmations. The final enable command is run as the logged-in user, not with `sudo`:
 
 ```sh
 /usr/sbin/sc_auth filevault -o enable -u "$USER" -h HASH
 ```
+
+If preflight reports that slot 9d is missing, create a key-management certificate on the inserted key before retrying:
+
+```sh
+yubikey-piv-login-setup \
+  --serial SERIAL \
+  --slot 9d \
+  --subject "CN=USER@HOST YubiKey SERIAL Key Management"
+```
+
+Do not use `--pair` for slot 9d; keep login pairing on slot 9a.
 
 Rollback after a successful boot is expected to be:
 

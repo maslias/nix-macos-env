@@ -106,6 +106,21 @@ exit 99
 EOF_SECURITY
 chmod +x "$fakebin/security"
 
+cat >"$fakebin/ykman" <<'EOF_YKMAN'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "$#" -eq 2 && "$1" == "list" && "$2" == "--serials" ]]; then
+  printf '123456\n'
+  exit 0
+fi
+if [[ "$#" -eq 7 && "$1" == "--device" && "$3" == "piv" && "$4" == "certificates" && "$5" == "export" && "$6" == "9d" ]]; then
+  printf 'fake cert\n'
+  exit 0
+fi
+exit 99
+EOF_YKMAN
+chmod +x "$fakebin/ykman"
+
 cat >"$fakesbin/sc_auth" <<'EOF_SC_AUTH'
 #!/usr/bin/env bash
 set -euo pipefail

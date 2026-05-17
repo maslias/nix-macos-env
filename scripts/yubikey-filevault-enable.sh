@@ -142,6 +142,11 @@ require_command sysadminctl
 require_command dscl
 require_command diskutil
 require_command security
+if command -v ykman >/dev/null 2>&1; then
+  pass "found ykman"
+else
+  warn "ykman unavailable; cannot preflight YubiKey PIV slot 9d key-management certificate"
+fi
 if [[ -x "$sc_auth_bin" ]]; then
   pass "found $sc_auth_bin"
 else
@@ -319,6 +324,28 @@ fi
 
 cat <<'EOF'
 
+PIV key-management readiness:
+EOF
+if command -v ykman >/dev/null 2>&1; then
+  mapfile -t inserted_serials < <(ykman list --serials 2>/dev/null | awk 'NF' || true)
+  if ((${#inserted_serials[@]} == 1)); then
+    inserted_serial="${inserted_serials[0]}"
+    if ykman --device "$inserted_serial" piv certificates export 9d - >/dev/null 2>&1; then
+      pass "inserted YubiKey $inserted_serial has a PIV slot 9d key-management certificate"
+    else
+      check "inserted YubiKey $inserted_serial has no PIV slot 9d key-management certificate; FileVault unlock needs a suitable key-management/wrapping key"
+    fi
+  elif ((${#inserted_serials[@]} == 0)); then
+    check "no YubiKey detected by ykman; insert the target YubiKey"
+  else
+    warn "multiple YubiKeys detected by ykman; insert only the target key to preflight PIV slot 9d"
+  fi
+else
+  warn "skipping PIV slot 9d check because ykman is unavailable"
+fi
+
+cat <<'EOF'
+
 Current FileVault smart-card status:
 EOF
 if [[ -n "$hash_value" && -x "$sc_auth_bin" ]]; then
@@ -425,7 +452,17 @@ prompt_exact "I HAVE THE FILEVAULT RECOVERY KEY" || fail "confirmation failed"
 prompt_exact "I CAN BOOT RECOVERYOS" || fail "confirmation failed"
 prompt_exact "ENABLE FILEVAULT YUBIKEY UNLOCK FOR $username" || fail "confirmation failed"
 
-"$sc_auth_bin" filevault -o enable -u "$username" -h "$hash_value"
+enable_status=0
+enable_output="$("$sc_auth_bin" filevault -o enable -u "$username" -h "$hash_value" 2>&1)" || enable_status=$?
+printf '%s\n' "$enable_output"
+if ((enable_status != 0)) || grep -Eqi 'failed|no suitable key|unable|error' <<<"$enable_output"; then
+  cat <<'EOF' >&2
+
+FileVault smart-card enablement did not complete successfully.
+No reboot test should be performed until this is resolved.
+EOF
+  exit 1
+fi
 
 cat <<'EOF'
 
@@ -435,7 +472,7 @@ EOF
 
 cat <<'EOF'
 
-Enable command finished. Before relying on this configuration:
+Enable command finished successfully. Before relying on this configuration:
   - keep recovery key available
   - reboot once with local support/recovery path available
   - test the primary YubiKey at FileVault pre-boot unlock
