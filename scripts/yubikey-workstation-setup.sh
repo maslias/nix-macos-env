@@ -192,11 +192,13 @@ EOF
   if confirm "Run recovery/admin verification checkpoint now?"; then
     yubikey-filevault-enable --verify-recovery || true
   fi
-  if confirm "Enable FileVault YubiKey unlock now? Only say yes if recovery verification passed"; then
-    yubikey-filevault-enable --execute
-  else
-    echo "Skipped: FileVault YubiKey unlock enablement"
-  fi
+  cat <<'EOF'
+
+FileVault smart-card enablement is not run automatically from this wizard.
+After the observed pre-boot lockout, execute mode is blocked when macOS
+smart-card-only login is enforced. Keep FileVault password/recovery-key based
+unless a separate lab procedure is developed and validated.
+EOF
 fi
 
 cat <<'EOF'

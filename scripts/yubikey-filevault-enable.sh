@@ -22,7 +22,7 @@ Options:
   --dry-run        run preflight only; do not enable (default)
   --verify-recovery
                    verify recovery/admin readiness and write a local checkpoint
-  --execute        run preflight, require recent recovery checkpoint and typed confirmations, then enable
+  --execute        experimental enable attempt; blocked when smart-card-only login is enforced
   --recovery-check-window-hours HOURS
                    require recovery checkpoint newer than HOURS for --execute (default: 24)
   -h, --help       Show this help
@@ -169,6 +169,33 @@ if [[ "$arch" == "arm64" ]]; then
   pass "Apple silicon architecture detected: $arch"
 else
   check "FileVault smart-card unlock is only supported by this workflow on Apple silicon; detected: ${arch:-unknown}"
+fi
+
+cat <<'EOF'
+
+macOS smart-card login policy:
+EOF
+smartcard_policy_raw="unset"
+smartcard_only_enforced=false
+if command -v defaults >/dev/null 2>&1; then
+  smartcard_policy_raw="$(defaults read /Library/Preferences/com.apple.security.smartcard enforceSmartCard 2>/dev/null || true)"
+  case "$smartcard_policy_raw" in
+    1|true|TRUE|YES|yes) smartcard_only_enforced=true ;;
+    "") smartcard_policy_raw="unset" ;;
+  esac
+else
+  smartcard_policy_raw="defaults unavailable"
+fi
+if [[ "$smartcard_only_enforced" == true ]]; then
+  if [[ "$mode" == "execute" ]]; then
+    check "smart-card-only login is enforced; refusing FileVault smart-card enablement after observed pre-boot lockout"
+    printf '\nExecute blocked before privileged checks: %d blocking check(s), %d warning(s)\n' "$failures" "$warnings"
+    exit 1
+  else
+    warn "smart-card-only login is enforced; FileVault smart-card enablement is blocked by this workflow"
+  fi
+else
+  pass "smart-card-only login enforcement is not enabled ($smartcard_policy_raw)"
 fi
 
 cat <<'EOF'
@@ -401,8 +428,7 @@ EOF
   cat <<EOF
 
 Recovery verification complete. Checkpoint recorded.
-To enable within $recovery_check_window_hours hour(s), run:
-  yubikey-filevault-enable --execute --hash $hash_value
+FileVault smart-card execute remains blocked on hosts with smart-card-only login enforced.
 EOF
   exit 0
 fi
@@ -411,10 +437,9 @@ if [[ "$mode" == "dry-run" ]]; then
   cat <<EOF
 
 Dry run complete. No changes were made.
-Before enablement, run:
+Before any future FileVault experiment, run:
   yubikey-filevault-enable --verify-recovery --hash $hash_value
-Then enable within $recovery_check_window_hours hour(s):
-  yubikey-filevault-enable --execute --hash $hash_value
+Execute is blocked on hosts with smart-card-only login enforced after the observed pre-boot lockout.
 EOF
   exit 0
 fi
@@ -468,11 +493,20 @@ cat <<'EOF'
 
 Post-enable status:
 EOF
-"$sc_auth_bin" filevault -o status -u "$username" -h "$hash_value" || true
+post_status="$("$sc_auth_bin" filevault -o status -u "$username" -h "$hash_value" 2>&1)" || true
+printf '%s\n' "$post_status"
+if grep -Eqi 'SecureToken .*not present|not enabled|failed|error' <<<"$post_status"; then
+  cat <<'EOF' >&2
+
+FileVault smart-card status did not confirm enablement.
+Treat this as failed and do not reboot-test FileVault smart-card unlock.
+EOF
+  exit 1
+fi
 
 cat <<'EOF'
 
-Enable command finished successfully. Before relying on this configuration:
+Enable command finished with non-failing status. Before relying on this configuration:
   - keep recovery key available
   - reboot once with local support/recovery path available
   - test the primary YubiKey at FileVault pre-boot unlock

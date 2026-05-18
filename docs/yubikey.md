@@ -211,13 +211,9 @@ Run recovery/admin verification before enablement:
 yubikey-filevault-enable --verify-recovery --hash HASH
 ```
 
-After recovery verification records a recent checkpoint, enable for the inserted paired YubiKey with explicit confirmations:
+After recovery verification records a checkpoint, execute mode remains blocked on hosts with smart-card-only login enforced. A real pre-boot lockout was observed during testing, so FileVault smart-card unlock is not production-ready in this repo.
 
-```sh
-yubikey-filevault-enable --execute --hash HASH
-```
-
-This is intentionally interactive and is not run automatically by Nix activation. See [`yubikey-filevault.md`](yubikey-filevault.md).
+This is intentionally not run automatically by Nix activation. See [`yubikey-filevault.md`](yubikey-filevault.md).
 
 Report local operational-policy compliance:
 
